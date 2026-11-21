@@ -73,7 +73,7 @@ app.py (sidebar/workspace routing; existing v3 functionality)
         └── visualization/learning_graphs.py # reusable tensor/gradient plots
 ```
 
-`ModelSpec` is a framework-neutral DTO. The adapter registry currently exposes **PyTorch only**. TensorFlow/Keras is planned for a future milestone, not shipped here. CNN is implemented in M5; RNN is implemented in M6 using a separate schema v3. LSTM, embeddings, attention, Transformers and Mini GPT remain planned.
+`ModelSpec` is a framework-neutral DTO. The adapter registry currently exposes **PyTorch only**. TensorFlow/Keras is planned for a future milestone. CNN uses schema v2, RNN schema v3 and M7 LSTM schema v4, alongside unchanged dense v1 and progress v1. Embeddings, attention, Transformers and Mini GPT remain planned.
 
 ## Tests and validation
 
@@ -105,6 +105,20 @@ Baseline tests: **41 passed**. Expanded Windows suite: **70 passed**, including 
 
 Select Learning Studio → Recurrent Neural Network (RNN). Nine sections cover 22 concepts; editable cell inputs/weights and step arithmetic; unrolled states; batch/time-first tensors; stacked recurrent architecture with final or sequence heads; offline order-sensitive, memory and sine datasets; SGD/Adam classification and forecasting; controlled BPTT/clipping/detach; variable lengths; and fourteen quiz questions with portable progress.
 
-Training is explicit and independent of the architecture explorer. Changing settings clears stale models and test results. Held-out evaluation is a separate action; forecasting uses direct multi-horizon regression. Recurrent specs remain framework-neutral; dense/CNN formats and progress v1 remain compatible. No recurrent ONNX export or LSTM/GRU/Transformer lesson is included.
+Training is explicit and independent of the architecture explorer. Changing settings clears stale models and test results. Held-out evaluation is a separate action; forecasting uses direct multi-horizon regression. Recurrent specs remain framework-neutral; dense/CNN formats and progress v1 remain compatible. M6 itself includes no recurrent ONNX export or gated-network lesson; M7 adds LSTM below.
+
+## M7 — LSTM Learning Studio
+
+Select Learning Studio → Long Short-Term Memory (LSTM). Nine sections cover 24 concepts,
+editable packed-gate calculations and unrolling, controlled memory/state experiments,
+stacked architectures and tensor inspection, offline memory classification and sine
+forecasting, measured RNN/LSTM comparisons and dependency sweeps, full-state BPTT,
+SGD/Adam updates and clipping, packed variable lengths, and 15 quizzes with progress.
+
+Train/validation results are measured; held-out tests require an explicit action.
+Equal-width comparisons show differing parameter costs and never guarantee LSTM
+superiority. See [Volume 5](docs/VOLUME_5_LSTM.md), [M7 completion](docs/milestones/M7_COMPLETION_REPORT.md),
+[handoff](docs/milestones/M7_HANDOFF.md) and [acceptance](docs/milestones/M7_ACCEPTANCE_CRITERIA.md)
+for tutorials, verification evidence and remaining acceptance checks.
 
 M5 baseline: **70 passed**. Final M6 regression: **135 passed** on Windows, including old ONNX checks and 65 new recurrent/runtime tests. See [M6 completion](docs/milestones/M6_COMPLETION_REPORT.md), [handoff](docs/milestones/M6_HANDOFF.md), [acceptance](docs/milestones/M6_ACCEPTANCE_CRITERIA.md) and [design](docs/milestones/M6_DESIGN.md) for final evidence and verification limits. Browser visual acceptance remains separate from headless and localhost runtime checks.

@@ -1,0 +1,57 @@
+"""LSTM educational content, numerical examples and guided exercises."""
+# title, explanation, formula, dimensions, numerical example, use, explorer
+TOPICS = [
+('RNN recap','A vanilla RNN repeatedly transforms its previous representation with the same weights.',r'h_t=\tanh(W_x x_t+W_h h_{t-1}+b)','x: [I], h: [H], W_x: [H,I]', 'For scalar x=1, W_x=0.5, h_previous=0, b=0: h=tanh(0.5)=0.4621.','Temporal pattern detection.','BPTT & clipping'),
+('Long-range dependencies','A prediction may depend on a symbol far earlier than the most recent input.',r'\hat y_T=F(x_1,\ldots,x_T)','sequence: [B,T,I], class logits: [B,C]','For T=20 and a first-position signal, dependency distance is 19.','Recall a topic introduced early in a document.','Training laboratory'),
+('Vanishing and exploding gradients','Repeated Jacobians can shrink or amplify gradients. Saturating nonlinearities also shrink them.',r'\partial h_T/\partial h_t=\prod_{k=t+1}^{T}J_k','J_k: [H,H]','A scalar factor 0.5 across 10 transitions gives 0.0009766; 1.5 gives 57.665.','Diagnose why early information is hard to learn.','BPTT & clipping'),
+('Gated memory','An LSTM learns separate functions for retaining, writing and exposing information.',r'c_t=f_t\odot c_{t-1}+i_t\odot g_t','Each gate and state: [H]','Retain 0.9 of c=2 and write 0.2 of g=0.5: c_new=1.9.','Keep useful context while suppressing distractors.','Gate & state laboratory'),
+('Hidden versus cell state','Cell state carries internal memory; hidden state is its gated exposed representation. Both propagate in time.',r'h_t=o_t\odot\tanh(c_t)','h,c: [H]; final h_n,c_n: [L,B,H]','With c=2 and o=0.5, h=0.4820, so the two states differ.','Store context without exposing all of it at each step.','Gate & state laboratory'),
+('Forget gate','Sigmoid determines the fraction of previous memory retained, separately for each unit.',r'f_t=\sigma(W_{if}x_t+b_{if}+W_{hf}h_{t-1}+b_{hf})','W_if: [H,I], W_hf: [H,H], f: [H]','A preactivation of 2 gives f=0.8808; old c=2 contributes 1.7616.','Forget stale context after a boundary.','Cell & unrolling'),
+('Input gate','The input gate controls how much candidate memory is written.',r'i_t=\sigma(W_{ii}x_t+b_{ii}+W_{hi}h_{t-1}+b_{hi})','W_ii: [H,I], i: [H]','i=0.25 and g=0.8 contribute 0.2 to the new cell state.','Suppress irrelevant observations.','Cell & unrolling'),
+('Candidate memory','Tanh proposes signed content for memory; it is not itself a sigmoid gate.',r'g_t=\tanh(W_{ig}x_t+b_{ig}+W_{hg}h_{t-1}+b_{hg})','g: [H], entries in [-1,1]','Preactivation -1 gives g=-0.7616, allowing negative memory writes.','Encode positive or negative evidence.','Cell & unrolling'),
+('Cell-state update','Old memory and new candidate content add through element-wise products. The symbol ⊙ means element-wise multiplication.',r'c_t=f_t\odot c_{t-1}+i_t\odot g_t','All terms: [H]','f=0.8,c_previous=0.5,i=0.2,g=0.3 gives c=0.46.','Combine persistent context with fresh evidence.','Gate & state laboratory'),
+('Output gate','The output gate controls how much transformed cell memory becomes visible.',r'o_t=\sigma(W_{io}x_t+b_{io}+W_{ho}h_{t-1}+b_{ho})','o: [H], W_io: [H,I]','o=0 hides h even if c=3; the internal memory remains.','Expose memory when needed for a prediction.','Gate & state laboratory'),
+('Hidden-state update','Tanh bounds the exposed signal before the output gate scales it.',r'h_t=o_t\odot\tanh(c_t)','h: [H], entries in [-1,1]','c=0.46 and o=0.7 give h≈0.3011.','Feed the next step and the prediction head.','Cell & unrolling'),
+('Retention over time','Large forget values preserve more old memory along the direct cell path; this is not a guarantee of indefinite recall.',r'c_T\supset c_0\odot\prod_{t=1}^{T}f_t','Product: [H]','0.99^100≈0.366, so even a gate near one loses memory eventually.','Measure retention across dependency lengths.','Gate & state laboratory'),
+('Forgetting information','A forget gate near zero suppresses the old contribution; input writes may still create new memory.',r'c_t\approx i_t\odot g_t\quad(f_t\approx0)','c_t: [H]','f=0.01 and c_previous=4 retain only 0.04.','Reset context after a topic change.','Gate & state laboratory'),
+('Shared parameters','The same four gate transforms operate at every step; sequence length does not add parameters.',r'\theta_t=\theta\ \forall t','W_ih: [4H,I], W_hh: [4H,H]','I=2,H=3 gives 84 recurrent parameters whether T=5 or T=50.','Apply learned temporal rules to longer sequences.','LSTM architecture'),
+('Single-layer LSTM','A layer emits a full sequence and a final pair of states.',r'Y,(h_n,c_n)=\operatorname{LSTM}(X)','X: [B,T,I], Y: [B,T,H], h_n,c_n: [1,B,H]','B=2,T=5,I=2,H=4 gives output [2,5,4], each final state [1,2,4].','Build a small temporal baseline.','LSTM architecture'),
+('Stacked LSTM','A later layer reads the previous layer output width. Dropout acts between layers during training.',r'I_1=I,\quad I_{l>1}=H','Y per layer: [B,T,H], states: [L,B,H]','I=2,H=3,L=2: recurrent counts 84+96=180.','Learn increasingly abstract temporal representations.','LSTM architecture'),
+('Sequence-to-one','The top layer final hidden state feeds a linear head. Packed sequences supply the final valid state.',r'\hat y=W_{head}h_{n}[-1]+b_{head}','head: [C,H], output: [B,C]','H=4,C=2: the biased head adds 10 parameters.','Classify the early memory signal at the final time.','Training laboratory'),
+('Sequence-to-sequence output','Apply the same head at each output position; mask padding in supervised losses.',r'\hat y_t=W_{head}Y_t+b_{head}','output: [B,T,C] or [T,B,C]','B=2,T=5,C=3 gives [2,5,3]. This builder does not implement an autoregressive decoder.','Per-step tagging or temporal regression.','LSTM architecture'),
+('Parameter counts and gate packing','PyTorch packs input, forget, candidate, output slices and stores two biases per gate.',r'P_l=4HI_l+4H^2+8H','weight_ih: [4H,I_l], weight_hh: [4H,H], each bias: [4H]','I=2,H=3: 24+36+24=84. Slices are 0:3,3:6,6:9,9:12.','Compare memory/computation costs against a vanilla RNN.','LSTM architecture'),
+('Backpropagation through LSTM','Autograd follows both state paths and accumulates contributions to shared gate parameters.',r'\left.\partial c_t/\partial c_{t-1}\right|_{\mathrm{direct}}=\operatorname{diag}(f_t)','cell Jacobian: [H,H]; packed gradient shapes match weights','Fixed f=0.9 over 10 transitions gives direct derivative 0.3487. Full gradients also include hidden/gate paths.','Inspect why an early symbol receives little training signal.','BPTT & clipping'),
+('Sequence classification','Raw class logits enter CrossEntropyLoss; Adam or SGD learns gate parameters from train batches.',r'L=-\log(\operatorname{softmax}(z)_y)','z: [B,2], target: [B] integers','Logits [0,0] and either class give loss log(2)=0.6931.','Recall a noisy symbol across independent distractors.','Training laboratory'),
+('Time-series forecasting','Predict future numerical values from a historical input window using MSE.',r'L=\frac1{BK}\sum_{b,k}(\hat y_{bk}-y_{bk})^2','input: [B,T,1], target/prediction: [B,K]','Prediction [0.2,0.4], target [0.3,0.2]: MSE=(0.01+0.04)/2=0.025.','Forecast an offline sine signal using isolated source series.','Training laboratory'),
+('LSTM limitations','Gates mitigate long-range gradient problems but can saturate, forget useful signals, and cost more parameters and sequential compute.',r'P_{LSTM}=4P_{RNN}\quad\text{(recurrent part, same I,H,bias)}','Both output width H; four transforms in LSTM','For I=2,H=3, RNN has 21 recurrent parameters, LSTM 84. Heads add the same count.','Choose models using measured validation evidence, not guaranteed superiority.','RNN versus LSTM'),
+('Motivation for attention','Fixed-width recurrent memory can bottleneck distant information. Attention later offers direct access to earlier representations.',r'\text{fixed recurrent memory: }(h_T,c_T)\in\mathbb{R}^{2H}','Two state vectors per layer; attention is outside M7','With H=4, each layer has 8 final state numbers regardless of T.','Understand the motivation for future lessons without implementing attention.','Gate & state laboratory'),
+]
+
+QUESTIONS = [
+('What does LSTM add to a vanilla RNN?', ['Gated cell memory','An external dataset'],0,'Gates regulate a separate cell pathway.'),
+('Are hidden and cell states generally equal?', ['No','Yes'],0,'h=o*tanh(c), so values generally differ.'),
+('Which gate retains old memory?', ['Forget','Output'],0,'f multiplies c_previous.'),
+('Which gate controls candidate writes?', ['Input','Forget'],0,'i multiplies g.'),
+('Which gate exposes transformed memory?', ['Output','Input'],0,'o multiplies tanh(c).'),
+('Candidate activation?', ['Tanh','Sigmoid'],0,'Candidate memory can be negative.'),
+('Sigmoid range?', ['0 to 1','-1 to 1'],0,'Sigmoid supplies fractional gates.'),
+('Tanh range?', ['-1 to 1','0 to 1'],0,'Tanh bounds signed candidate and exposed memory.'),
+('I=2,H=3, biased one-layer recurrent count?', ['84','21'],0,'4*3*2+4*3*3+8*3=84, excluding the head.'),
+('Final cell state shape with L layers?', ['[L,B,H]','[B,T,H]'],0,'batch_first never swaps the state dimensions.'),
+('Which task needs distant context?', ['Recall an early symbol after distractors','Read only the last symbol'],0,'The memory task isolates a controlled dependency.'),
+('Direct cell derivative with gates held fixed?', ['Forget gate','Always one'],0,'The direct path multiplies forget values; other paths also contribute.'),
+('Does f=0.99 guarantee indefinite retention?', ['No','Yes'],0,'0.99 raised to a long duration decays.'),
+('Does LSTM always beat RNN?', ['No','Yes'],0,'Compare measured results with shared settings and splits.'),
+('Does clipping repair vanishing gradients?', ['No','Yes'],0,'Clipping limits exploding parameter gradients.'),
+]
+
+EXPERIMENTS = [
+('Compare forget gates 0.05 and 0.99 at lengths 5 and 40.','Small f erases old memory and shrinks the direct gradient faster.'),
+('Set input gate to zero and output gate to zero separately.','No writes preserves only decayed old memory; no output hides memory without erasing c.'),
+('Reverse the known impulse sequence.','The negative impulse arrives at a different time, changing retained context.'),
+('Change I=2,H=3,L=1 to L=2.','Recurrent count grows from 84 to 180; add the head separately.'),
+('Train both models at dependency distances 1 and T-1 with the same seed.','Measured validation accuracy can vary; LSTM superiority is not guaranteed.'),
+('Change forget bias and initialization scale in BPTT.','Full hidden/cell gradients vary through all gate paths, beyond the direct product.'),
+('Use a tiny clipping threshold and compare SGD with Adam.','Clipping reduces the parameter norm; SGD follows theta-lr*g, Adam uses moments.'),
+('Compare packed lengths 5,2,4 with padded last positions.','Final valid hidden states equal packed h_n[-1]; padding can alter ordinary states.'),
+]

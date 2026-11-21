@@ -90,14 +90,14 @@ def _metrics(model, x, y, task):
     return loss,score,prediction.detach()
 
 
-def train_sequences(config: RNNTrainingConfig, data=None):
+def train_sequences(config: RNNTrainingConfig, data=None, *, spec=None, adapter=None):
     data = sequence_splits(config.task,config.samples,config.sequence_length,config.noise,config.seed,config.horizon) if data is None else data
     if data['task'] != config.task:
         raise ValueError('Dataset task differs from configuration')
-    spec = RNNModelSpec(hidden_size=config.hidden_size,num_layers=config.num_layers,
+    spec = spec if spec is not None else RNNModelSpec(hidden_size=config.hidden_size,num_layers=config.num_layers,
                         output_size=config.horizon if config.task=='forecasting' else 2,
                         activation=config.activation,seed=config.seed)
-    model = RNNAdapter().build(spec)
+    model = (RNNAdapter() if adapter is None else adapter).build(spec)
     initial = {name:p.detach().clone() for name,p in model.named_parameters()}
     optimizer = (torch.optim.Adam if config.optimizer=='Adam' else torch.optim.SGD)(model.parameters(),lr=config.learning_rate)
     criterion = nn.MSELoss() if config.task=='forecasting' else nn.CrossEntropyLoss()
