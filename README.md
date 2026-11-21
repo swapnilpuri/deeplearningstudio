@@ -81,3 +81,11 @@ app.py (sidebar/workspace routing; existing v3 functionality)
 ```
 
 The automated suite includes v3 dataset, model, training and visualization tests, and v4 model specification, adapter, forward trace, autograd/SGD, progress and content tests. See `TEST_REPORT.md` for the author's actual verification results and coverage gaps. Streamlit UI interaction, Windows installation, ONNX runtime export, Netron inspection and MNIST download must be checked locally when dependencies/network are available.
+
+
+## M5 — CNN Learning Studio (provisional overlay)
+
+Select Learning Studio → Convolutional Neural Network (CNN). Explore PyTorch convolution,
+pooling, CNN shape propagation, gradients and Digits training. See
+`docs/VOLUME_3_CNN.md`, `docs/ROADMAP.md`, and
+`docs/milestones/M5_COMPLETION_REPORT.md` for scope and verification status.
