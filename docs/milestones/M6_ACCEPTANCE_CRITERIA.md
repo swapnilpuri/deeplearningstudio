@@ -1,6 +1,6 @@
 # M6 acceptance criteria and evidence
 
-Status: implementation and automated/runtime verification passed at the checkpoint; final Git delivery and browser visual acceptance are tracked separately in the completion report. No manual/visual pass is inferred from headless tests.
+Status: implementation, automated/runtime verification (135 tests) and Git delivery passed; [draft PR #3](https://github.com/swapnilpuri/deeplearningstudio/pull/3) targets master. Independent/browser visual acceptance remains pending. No manual/visual pass is inferred from headless tests.
 
 | Requirement | Implementation / evidence |
 |---|---|

@@ -47,4 +47,7 @@ Not executed: rendered browser layout/hover interactions, browser JSON file-pick
 - Final edited-source ty: all checks passed. Compileall on learning, visualization, tests and app.py passed.
 - Staged diff whitespace check passed after removing trailing spaces (including Markdown hard-break spaces in the supplied Operating Model; wording preserved). Reviewed integration diff and new computation/UI sources. Hygiene check inspected all 20 staged text files for size, generated-file paths and recognized private-key/token patterns; no findings.
 - Temporary localhost verification server stopped after checks; its console had no new Streamlit warnings or tracebacks.
-- Git commit/push/draft PR delivery pending; exact delivery status follows in the handoff. No source change followed final regression.
+- Implementation commit: `bbc0109` (full SHA available through `git rev-parse bbc0109`). Feature branch pushed to `deeplearningstudio`.
+- [Draft PR #3](https://github.com/swapnilpuri/deeplearningstudio/pull/3) opened against `master`; no merge performed. It includes inherited M5 final-validation work from PR #2. Final documentation commit is the containing branch tip; use `git rev-parse HEAD` for its full SHA.
+- Sandbox push/CLI calls could not connect through their configured proxy; approved normal-network push and CLI succeeded. GitHub connector PR creation returned HTTP 403 (Resource not accessible by integration); installed GitHub CLI created the draft PR.
+- No source change followed final regression. Final independent/manual acceptance remains pending; implementation, automated/runtime verification and Git delivery are complete.
