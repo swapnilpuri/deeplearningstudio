@@ -40,3 +40,7 @@ No known failing automated requirement remains. Browser layout, browser download
 A tiny one-epoch localhost smoke run produced 26.67% test accuracy. This verifies the evaluation flow, not model quality; avoid tuning against repeated test evaluations. Dependency ranges remain unlocked. Volumes 1 and 2 are preserved.
 
 The actual Training Studio CSV HTTP download was also fetched and parsed successfully with validation and gradient columns. Browser visual checking was attempted but unavailable: browser host unavailable and Windows Computer Use could not confidently determine Chrome URL.
+
+## Git delivery
+
+Implementation commit: `c3e6f0eda3d75c47a82128470efba11e3f9021a9`. Feature branch pushed; [draft PR #2](https://github.com/swapnilpuri/deeplearningstudio/pull/2) targets master. No merge performed. The handoff records delivery history and the exact branch tip is available with `git rev-parse HEAD`.
