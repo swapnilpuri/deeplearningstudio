@@ -7,7 +7,7 @@ Updated: 2026-11-21. Current milestone: CNN Learning Studio (M5).
 - Checkout: `C:\Personal\Swapnil\Learning\Innovation\neural-network-studio`.
 - Starting master: `7b1c0d1b779012e21384235852d42e2c23de4041` (initial M5 merged through PR #1).
 - Branch: `feature/m5-final-validation`; do not merge automatically.
-- Implementation commit: pending final delivery; exact tip is available with `git rev-parse HEAD`. A document cannot contain its own commit hash.
+- Implementation commit: `c3e6f0eda3d75c47a82128470efba11e3f9021a9`. Exact delivery tip (including this handoff update) is available with `git rev-parse HEAD`; a document cannot contain its own commit hash.
 - Implementation and automated/runtime verification passed; browser/manual acceptance remains unverified. See [completion report](M5_COMPLETION_REPORT.md) and [audit](M5_AUDIT.md).
 
 ## Architecture and changed files
@@ -46,4 +46,4 @@ After manual acceptance update completion status, review the feature PR targetin
 - Edited-source ty check: all checks passed; compileall passed; git diff whitespace check passed.
 - Actual HTTP CSV download verified: nonempty payload (131 characters for the initial one-row experiment) with epoch, loss, score, grad_norm, val_loss and val_score. This checks the UI download wiring as well as unit-tested serialization.
 - Browser visual attempt: browser host unavailable; Windows Computer Use stopped because it could not reliably determine Chrome's current URL. No browser visual verification is claimed.
-- GitHub CLI reports an invalid saved credential. Sandbox push could not connect through its configured proxy; remote delivery will be retried through the permitted Git/connector path after committing.
+- Sandbox push could not connect through its configured proxy. Automatic approval review initially rejected publication because authorization in the attached request was not recognized. The user subsequently explicitly approved pushing this branch to swapnilpuri/deeplearningstudio and opening a PR targeting master. Remote delivery is being performed after this documentation update. GitHub CLI reports an invalid saved credential; the connected GitHub tools are available for PR creation.
