@@ -29,6 +29,11 @@ Running localhost port 8767: 27 successful LSTM interactions over all nine secti
 plus initial app/workspace/lesson selection; no new console warnings or tracebacks.
 One-epoch runtime memory CE 0.687311, accuracy 0.583333; two-horizon sine MSE
 0.511409, MAE 0.597658. Workflow evidence only; no superiority/quality claim.
+User-requested live recheck on 2026-11-21: port 8767 health returned ok; a fresh
+agent session completed 20 ready interactions across all sections, both train/test
+tasks and RNN/LSTM train/test comparison, without app errors. No source changed.
+Browser retry: browser access host unavailable; native multi-tab window inspection
+was rejected by automatic review. A dedicated local-app-only window was requested.
 
 Browser attempt used the computer-use skill. Initial automatic review rejected
 inspection because the Chrome window might expose unrelated private tabs. The user

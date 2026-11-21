@@ -46,6 +46,7 @@ No new dependencies, downloads, environment upgrades, ZIPs or duplicate reposito
 | Edited-source ty | Passed after correcting two nullable-gradient accesses |
 | Compileall / whitespace / source structure | Passed |
 | Actual localhost Streamlit | 27 LSTM ready interactions across all nine sections, plus app/workspace/lesson setup; no new server warnings or tracebacks |
+| User-requested live recheck | 20 ready interactions in a fresh agent session on port 8767; all nine sections, both train/test tasks and RNN/LSTM train/test comparison; no app errors |
 
 Commands:
 
@@ -83,6 +84,10 @@ tabs. The user explicitly approved local-app browser inspection. The resumed
 attempt inspected the local-app window and entered the test-server address;
 Computer Use then stopped because it could not confidently determine the browser
 URL to enforce policy. No automated browser validation pass is claimed.
+On the user's next verification request, the browser access host was unavailable
+and automatic review rejected whole-window inspection of the multi-tab Chrome
+window. A dedicated local-app-only window was requested; runtime checks continued
+through the local agent API independently of browser access.
 
 On 2026-11-21 the user reported starting Streamlit and supplied a screenshot.
 It confirms the LSTM option and initial Concepts & mathematics screen displaying
