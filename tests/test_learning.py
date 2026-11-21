@@ -75,7 +75,12 @@ def test_lesson_quizzes_and_visuals():
 
 def test_workspace_hook_preserves_v3():
     from pathlib import Path
-    app = Path(__file__).resolve().parents[1].joinpath('app.py').read_text()
+    app = (
+    Path(__file__).resolve()
+    .parents[1]
+    .joinpath('app.py')
+    .read_text(encoding='utf-8')
+    )
     for name in ('Neural Network Studio','Training Studio','Dataset Management','Learning Studio'):
         assert name in app
     compile(app, 'app.py', 'exec')

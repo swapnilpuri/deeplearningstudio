@@ -323,9 +323,29 @@ else:
         torch.save({'model_state_dict': exp.model.state_dict(), 'sizes': exp.sizes, 'activation': cfg.activation, 'bias': cfg.bias, 'config': cfg.__dict__, 'epoch': exp.epoch}, buffer)
         st.download_button('Download PyTorch checkpoint (.pt)', buffer.getvalue(), file_name='trained_network.pt', mime='application/octet-stream')
         csv_buffer = io.StringIO()
-        writer = csv.DictWriter(csv_buffer, fieldnames=['epoch', 'loss', 'score', 'grad_norm'])
+        # Export all available training metrics
+        output = io.StringIO()
+
+        fieldnames = list(
+            dict.fromkeys(
+                key
+                for record in exp.history
+                for key in record.keys()
+            )
+        )
+
+        writer = csv.DictWriter(
+            output,
+            fieldnames=fieldnames
+        )
+
         writer.writeheader()
         writer.writerows(exp.history)
+
+        csv_data = output.getvalue()    
+        # writer = csv.DictWriter(csv_buffer, fieldnames=['epoch', 'loss', 'score', 'grad_norm'])
+        # writer.writeheader()
+        # writer.writerows(exp.history)
         st.download_button('Download training metrics (.csv)', csv_buffer.getvalue(), 'training_metrics.csv', 'text/csv')
         st.download_button('Download experiment configuration (.json)', json.dumps(cfg.__dict__, indent=2), 'experiment_config.json', 'application/json')
         st.divider()
