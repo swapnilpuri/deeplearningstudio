@@ -15,7 +15,11 @@ def render_learning_studio():
     if 'learning_progress_v1' not in st.session_state:
         st.session_state.learning_progress_v1 = empty_progress()
     progress = st.session_state.learning_progress_v1
-    lesson = st.selectbox('Learning path', [*LESSONS, 'cnn', 'rnn', 'lstm'], format_func=lambda k: LESSONS[k]['title'] if k in LESSONS else {'cnn':'Convolutional Neural Network (CNN)', 'rnn':'Recurrent Neural Network (RNN)', 'lstm':'Long Short-Term Memory (LSTM)'}[k], key='learn_lesson')
+    lesson = st.selectbox('Learning path', [*LESSONS, 'cnn', 'rnn', 'lstm', 'embedding'], format_func=lambda k: LESSONS[k]['title'] if k in LESSONS else {'cnn':'Convolutional Neural Network (CNN)', 'rnn':'Recurrent Neural Network (RNN)', 'lstm':'Long Short-Term Memory (LSTM)', 'embedding':'Embedding Network'}[k], key='learn_lesson')
+    if lesson == 'embedding':
+        from .embedding_ui import render_embedding_learning_studio
+        render_embedding_learning_studio()
+        return
     if lesson == 'lstm':
         from .lstm_ui import render_lstm_learning_studio
         render_lstm_learning_studio()
