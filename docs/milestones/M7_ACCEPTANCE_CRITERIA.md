@@ -14,10 +14,13 @@ is recorded below; passing unit checks do not establish browser visual acceptanc
 | Variable lengths and masks | Passed: packed h/c vs individual runs, final-valid hidden equality, poisoned padding inputs/targets and zero padded gradients |
 | M4–M6 and progress compatibility | Passed: 135-test baseline; full final 181 passed including legacy ONNX; progress round trip preserves prior lessons |
 | Volume 5, roadmap, README, ADR, handoff | Implemented and reviewed for formulas, dimensions, worked examples and actual verification evidence |
-| Feature commit and PR against master | branch created; delivery pending |
+| Feature commit and PR against master | Passed: pushed 8c23761535cae80d38bb2af7126110e914b272b2; draft PR #4 targets master; open and unmerged |
 
-Browser layout/hover/file-picker/download round-trip and independent acceptance
-review are unverified. Automatic approval review blocked Chrome accessibility
-inspection due to possible unrelated private tabs. No visual pass is claimed.
+Initial browser rendering is confirmed by the user's 2026-11-21 screenshot:
+LSTM entry, Concepts & mathematics / RNN recap, formula, diagram, sliders and all
+seven preview plots. This is a static check of one screen. Other section layouts,
+hover/editor/file-picker/download round-trip and independent acceptance review
+remain unverified. Following explicit user approval, browser automation stopped
+because Computer Use could not confidently determine the URL to enforce policy.
 No merge authorized. Overall status: implementation/automated/runtime criteria
 passed; full independent/manual acceptance remains pending.

@@ -77,13 +77,21 @@ running-app interactions. Failed: no known source/test failures. Skipped: none.
 Initial environment issue: restricted Windows temp/cache access; normal-permission
 execution resolved pytest and ty. No tests disabled or expectations weakened.
 
-Browser inspection was attempted using the computer-use skill. Automatic approval
-review rejected Chrome accessibility inspection because the window could expose
-unrelated private tabs. No browser inspection/input followed that rejection; a
-permission question was presented separately. Rendered layout/hover/editor,
+Browser inspection was attempted using the computer-use skill. Automatic review
+initially rejected inspection because the window could expose unrelated private
+tabs. The user explicitly approved local-app browser inspection. The resumed
+attempt inspected the local-app window and entered the test-server address;
+Computer Use then stopped because it could not confidently determine the browser
+URL to enforce policy. No automated browser validation pass is claimed.
+
+On 2026-11-21 the user reported starting Streamlit and supplied a screenshot.
+It confirms the LSTM option and initial Concepts & mathematics screen displaying
+RNN recap text/formula, the gate diagram, preview controls, and synchronized input,
+forget, input-gate, candidate, cell, output-gate and hidden plots. This establishes
+initial browser rendering only. Other section layouts, chart hover, editor actions,
 browser upload/download round trip, fresh uv install, Netron and independent
-architecture/acceptance review remain unverified. Headless success is not a
-visual acceptance claim. Prior M5/M6 manual acceptance is also still pending.
+architecture/acceptance review remain unverified. Prior M5/M6 manual acceptance
+is also still pending. Headless success is not full visual acceptance.
 
 Scope limits: unidirectional LSTM, no projection; per-step builder outputs but
 fixed-length final-state task training; no autoregressive decoder or recurrent
@@ -97,7 +105,14 @@ M7_HANDOFF.md for criterion mapping, files and continuation commands.
 
 ## Git delivery
 
-Feature commit, push and draft PR are being prepared against master. No merge.
+Implementation commit: `8c23761535cae80d38bb2af7126110e914b272b2`; pushed on
+`feature/m7-lstm-learning-studio` and verified against the remote branch.
+[Draft PR #4](https://github.com/swapnilpuri/deeplearningstudio/pull/4) targets master;
+its open/draft/unmerged state and head/base commits were verified through GitHub.
+The connector could read the PR but creation returned 403; CLI creation succeeded.
+No merge performed. Final containing documentation commit: `git rev-parse HEAD`.
+The follow-up changes documentation only; no source changes after the final full
+regression, so tests were not repeated. Remaining acceptance checks are listed above.
 The final containing commit is resolved using `git rev-parse HEAD` because a
 document cannot name its own containing commit. Delivery details will be appended
 after the remote actions complete.

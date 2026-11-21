@@ -1,8 +1,9 @@
 # M7 handoff
 
-Status: implementation and automated/runtime validation passed; Git delivery in progress;
-browser visual and independent acceptance pending. Branch: feature/m7-lstm-learning-studio.
-Starting/current baseline: fcea18305f2112a2c34f2bcc8e48117f13d1d428, verified against
+Status: implementation, automated/runtime validation and Git delivery passed;
+initial browser rendering confirmed by user screenshot; remaining browser interactions
+and independent acceptance pending. Branch: feature/m7-lstm-learning-studio.
+Starting baseline: fcea18305f2112a2c34f2bcc8e48117f13d1d428, verified against
 remote master on 2026-11-21. Working tree initially clean; M6 merge confirmed.
 Requirements: M7_REQUIREMENTS.md; design: M7_DESIGN.md; decision: ../adr/ADR-0003-framework-neutral-lstm.md.
 
@@ -29,15 +30,28 @@ plus initial app/workspace/lesson selection; no new console warnings or tracebac
 One-epoch runtime memory CE 0.687311, accuracy 0.583333; two-horizon sine MSE
 0.511409, MAE 0.597658. Workflow evidence only; no superiority/quality claim.
 
-Browser attempt used the computer-use skill; automatic approval review rejected
-Chrome accessibility inspection because the window may expose unrelated private
-tabs. No browser input/inspection followed the rejection. User permission question
-is pending. Rendered layout, chart hover, editor interaction and browser file-picker/
+Browser attempt used the computer-use skill. Initial automatic review rejected
+inspection because the Chrome window might expose unrelated private tabs. The user
+then explicitly approved local-app inspection. The resumed attempt selected the
+local-app window and entered the test-server address, but Computer Use stopped
+because it could not determine the browser URL confidently enough to enforce policy.
+No automated browser acceptance pass is claimed. On 2026-11-21, the user started
+Streamlit and supplied a screenshot confirming the LSTM learning-path entry and
+Concepts & mathematics / RNN recap rendering, formula, gate diagram, preview sliders
+and seven gate/state plots. This is static visual evidence for that screen only.
+Other section layouts, chart hover, editor interaction and browser file-picker/
 download round trip remain unverified. Fresh install, Netron and independent review
 were not run. No known failing automated checks. Recurrent ONNX export and
 variable-length task training are outside scope; packing/masking is demonstrated.
 
-Next: finish feature commit/push and draft PR; then independent acceptance and
-browser verification with suitable authorization. No automatic merge.
+Implementation commit: `8c23761535cae80d38bb2af7126110e914b272b2`, pushed and verified
+against the remote branch. [Draft PR #4](https://github.com/swapnilpuri/deeplearningstudio/pull/4)
+targets master; open, unmerged. GitHub connector creation returned 403; GitHub CLI
+created the PR successfully. Current containing documentation commit: resolve
+`git rev-parse HEAD` (a document cannot name its own containing commit).
+
+Next: independent acceptance review and remaining browser interaction checks.
+No automatic merge. No source changes after the final 181-test regression;
+this follow-up updates documentation only, so regression was not repeated.
 Resume: `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests/test_lstm.py`;
 `git status`; `git log -1`. Final commit will be resolved via `git rev-parse HEAD`.
