@@ -1,6 +1,6 @@
-# PyTorch Neural Network Studio v4 — Milestone 4
+# DeepLearningStudio — M6 RNN Learning Studio
 
-An interactive Streamlit learning application with four workspaces: **Neural Network Studio**, **Dataset Management**, **Training Studio**, and newly introduced **Learning Studio**. Built from the uploaded v3 source, not from a replacement scaffold.
+An interactive Streamlit learning application with four workspaces: **Neural Network Studio**, **Dataset Management**, **Training Studio**, and **Learning Studio** with feed-forward, deep, convolutional and recurrent neural network lessons.
 
 ## Requirements
 
@@ -9,10 +9,10 @@ An interactive Streamlit learning application with four workspaces: **Neural Net
 
 ## Windows 11 install using uv
 
-Extract the ZIP and locate the folder containing `app.py` and `requirements.txt`. Example PowerShell commands:
+Use the existing repository checkout containing `app.py` and `requirements.txt`:
 
 ```powershell
-cd 'C:\Personal\Swapnil\Learning\Innovation\neural-network-studio-v4'
+cd 'C:\Personal\Swapnil\Learning\Innovation\neural-network-studio'
 uv venv --python 3.12
 uv pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m pytest -v
@@ -21,7 +21,7 @@ uv pip install -r requirements.txt
 
 Open `http://localhost:8501` in your browser. If `uv` is missing, install it from [official documentation](https://docs.astral.sh/uv/getting-started/installation/). To enable optional MNIST downloads, install a compatible `torchvision` with `uv pip install torchvision`. For browser-based Netron inspection, open the exported ONNX in [Netron](https://netron.app).
 
-**Notes:** PyTorch CPU-only builds may require using the [official PyTorch installation instructions](https://pytorch.org/get-started/locally/) for your hardware. ZIP contains source code and requirements, **not** a Python virtual environment. The installer uses the published package index; exact versions are not locked in this milestone.
+**Notes:** PyTorch CPU-only builds may require using the [official PyTorch installation instructions](https://pytorch.org/get-started/locally/) for your hardware. The installer uses the published package index; exact versions are not locked in this milestone.
 
 ## Guided Learning Studio (new in v4)
 
@@ -38,6 +38,8 @@ Open `http://localhost:8501` in your browser. If `uv` is missing, install it fro
 ## Detailed documentation
 
 - [Volume 1 — Feed-Forward Neural Networks](docs/VOLUME_1_FOUNDATIONS.md) — neurons, activations, matrix shapes, MSE, gradients, guided forward and backprop tutorials.
+- [Volume 4 — Recurrent Neural Networks](docs/VOLUME_4_RNN.md) — recurrence, sequence tensors, BPTT, padding, classification and forecasting tutorials, experiments and quiz answers.
+- [Volume 3 — Convolutional Neural Networks](docs/VOLUME_3_CNN.md) — convolution/pooling illustrations, tensor shapes, training workflow, backpropagation, tutorials and quiz explanations.
 - [Volume 2 — Deep Neural Networks](docs/VOLUME_2_DEEP_NETWORKS.md) — deep layers, chain rule, gradient flow, activation/width comparisons, adapter design and experiments.
 
 ## Existing v3 workspaces (retained)
@@ -71,7 +73,7 @@ app.py (sidebar/workspace routing; existing v3 functionality)
         └── visualization/learning_graphs.py # reusable tensor/gradient plots
 ```
 
-`ModelSpec` is a framework-neutral DTO. The adapter registry currently exposes **PyTorch only**. TensorFlow/Keras is planned for a future milestone, not shipped here. CNN, RNN, LSTM, embeddings, attention, Transformers and Mini GPT are also planned, not yet available.
+`ModelSpec` is a framework-neutral DTO. The adapter registry currently exposes **PyTorch only**. TensorFlow/Keras is planned for a future milestone, not shipped here. CNN is implemented in M5; RNN is implemented in M6 using a separate schema v3. LSTM, embeddings, attention, Transformers and Mini GPT remain planned.
 
 ## Tests and validation
 
@@ -83,9 +85,26 @@ app.py (sidebar/workspace routing; existing v3 functionality)
 The automated suite includes v3 dataset, model, training and visualization tests, and v4 model specification, adapter, forward trace, autograd/SGD, progress and content tests. See `TEST_REPORT.md` for the author's actual verification results and coverage gaps. Streamlit UI interaction, Windows installation, ONNX runtime export, Netron inspection and MNIST download must be checked locally when dependencies/network are available.
 
 
-## M5 — CNN Learning Studio (provisional overlay)
+## M5 — CNN Learning Studio
 
-Select Learning Studio → Convolutional Neural Network (CNN). Explore PyTorch convolution,
-pooling, CNN shape propagation, gradients and Digits training. See
-`docs/VOLUME_3_CNN.md`, `docs/ROADMAP.md`, and
-`docs/milestones/M5_COMPLETION_REPORT.md` for scope and verification status.
+Choose Learning Studio → Convolutional Neural Network (CNN), then a CNN section:
+
+- Concepts: twenty topics with worked formulas and dimensions.
+- Convolution: rectangular grayscale/RGB inputs, editable per-filter/per-channel kernels, presets, stride/padding/dilation/bias, exact arithmetic and feature maps.
+- Pooling: max/average windows, dimensions and highlighted contributions.
+- Architecture: one to three convolution blocks, optional dense hidden layers, inferred Flatten, parameter shapes, actual forward tensors/logits and JSON export.
+- Backpropagation: actual SGD/Adam updates, gradients, loss and optional numerical checking.
+- Training: seeded Digits mini-batches, separate validation curves, initial/trained filters and explicitly requested held-out test evaluation.
+- Quiz/progress: twelve questions, guided observations and M4-compatible JSON export/import.
+
+The builder, one-step demonstration and training laboratory are independent experiments. Model definitions use framework-neutral CNN schema v2 beside unchanged dense schema v1. No TensorFlow/Keras adapter is included.
+
+Baseline tests: **41 passed**. Expanded Windows suite: **70 passed**, including four-workspace headless UI checks and real dense ONNX export/checker. Running localhost Streamlit interactions and edited-source type checks also passed. Browser visual layout, downloads/file-picker interactions, Netron, optional MNIST download and fresh installation remain unverified; M5 awaits manual acceptance. See the current [completion report](docs/milestones/M5_COMPLETION_REPORT.md), [handoff](docs/milestones/M5_HANDOFF.md), [audit](docs/milestones/M5_AUDIT.md) and [roadmap](docs/ROADMAP.md). Historical `TEST_REPORT.md` records the earlier milestone, not current M5 verification.
+
+## M6 — RNN Learning Studio
+
+Select Learning Studio → Recurrent Neural Network (RNN). Nine sections cover 22 concepts; editable cell inputs/weights and step arithmetic; unrolled states; batch/time-first tensors; stacked recurrent architecture with final or sequence heads; offline order-sensitive, memory and sine datasets; SGD/Adam classification and forecasting; controlled BPTT/clipping/detach; variable lengths; and fourteen quiz questions with portable progress.
+
+Training is explicit and independent of the architecture explorer. Changing settings clears stale models and test results. Held-out evaluation is a separate action; forecasting uses direct multi-horizon regression. Recurrent specs remain framework-neutral; dense/CNN formats and progress v1 remain compatible. No recurrent ONNX export or LSTM/GRU/Transformer lesson is included.
+
+M5 baseline: **70 passed**. Final M6 regression: **135 passed** on Windows, including old ONNX checks and 65 new recurrent/runtime tests. See [M6 completion](docs/milestones/M6_COMPLETION_REPORT.md), [handoff](docs/milestones/M6_HANDOFF.md), [acceptance](docs/milestones/M6_ACCEPTANCE_CRITERIA.md) and [design](docs/milestones/M6_DESIGN.md) for final evidence and verification limits. Browser visual acceptance remains separate from headless and localhost runtime checks.

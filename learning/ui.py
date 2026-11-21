@@ -15,7 +15,11 @@ def render_learning_studio():
     if 'learning_progress_v1' not in st.session_state:
         st.session_state.learning_progress_v1 = empty_progress()
     progress = st.session_state.learning_progress_v1
-    lesson = st.selectbox('Learning path', [*LESSONS, 'cnn'], format_func=lambda k: LESSONS[k]['title'] if k in LESSONS else 'Convolutional Neural Network (CNN)', key='learn_lesson')
+    lesson = st.selectbox('Learning path', [*LESSONS, 'cnn', 'rnn'], format_func=lambda k: LESSONS[k]['title'] if k in LESSONS else {'cnn':'Convolutional Neural Network (CNN)', 'rnn':'Recurrent Neural Network (RNN)'}[k], key='learn_lesson')
+    if lesson == 'rnn':
+        from .rnn_ui import render_rnn_learning_studio
+        render_rnn_learning_studio()
+        return
     if lesson == 'cnn':
         from .cnn_ui import render_cnn_learning_studio
         render_cnn_learning_studio()
@@ -49,11 +53,11 @@ def render_learning_studio():
                 st.write(explanation)
         st.caption('For educational regression examples, the final layer is linear and loss is MSE. Classification can use different output/loss configurations in Training Studio.')
     with tabs[1]:
-        st.plotly_chart(network_figure(spec.sizes), use_container_width=True)
+        st.plotly_chart(network_figure(spec.sizes), width="stretch")
         model = adapter.build(spec)
         for name, parameter in model.named_parameters():
             st.write(f'{name} — {tuple(parameter.shape)}')
-            st.plotly_chart(tensor_heatmap(parameter.detach().numpy(), f'{name}: shape {tuple(parameter.shape)}'), use_container_width=True)
+            st.plotly_chart(tensor_heatmap(parameter.detach().numpy(), f'{name}: shape {tuple(parameter.shape)}'), width="stretch")
         st.json(spec.as_dict())
     with tabs[2]:
         raw = st.text_input('Input vector (comma-separated)', ', '.join(['1'] * inputs), key=f'learn_x_{inputs}')
@@ -63,7 +67,7 @@ def render_learning_studio():
             for step in steps:
                 st.markdown(f'**{step.name}** — shape `{step.shape}`')
                 st.caption(step.explanation)
-                st.dataframe(step.values, use_container_width=True)
+                st.dataframe(step.values, width="stretch")
         except (ValueError, OverflowError) as exc:
             x_values = None
             st.warning(str(exc))
@@ -78,13 +82,13 @@ def render_learning_studio():
             c1, c2 = st.columns(2)
             c1.metric('MSE before update', f"{update['loss_before']:.6f}")
             c2.metric('MSE after update', f"{update['loss_after']:.6f}")
-            st.plotly_chart(gradient_bar(update['parameters']), use_container_width=True)
+            st.plotly_chart(gradient_bar(update['parameters']), width="stretch")
             name_options = [u['parameter'] for u in update['parameters']]
             selected = st.selectbox('Inspect one parameter tensor', name_options, key='learn_param')
             detail = next(u for u in update['parameters'] if u['parameter'] == selected)
             st.dataframe([{'index': i, 'before': old, 'dLoss/dParameter': g, 'after SGD': new}
                           for i, (old,g,new) in enumerate(zip(detail['before'], detail['gradient'], detail['after']))],
-                         hide_index=True, use_container_width=True)
+                         hide_index=True, width="stretch")
             st.caption('Compare after = before − learning_rate × gradient (within float32 rounding). Each control change recreates the same seeded model and demonstrates one independent update.')
         except (ValueError, OverflowError) as exc:
             st.warning(str(exc))

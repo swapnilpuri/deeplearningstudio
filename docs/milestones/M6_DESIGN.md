@@ -1,0 +1,9 @@
+# M6 design
+
+Extend Learning Studio with an isolated recurrent lesson; preserve dense v1, CNN v2 and progress v1 unchanged. Reuse progress functions and Plotly conventions. Recurrent schema v3 is an immutable, JSON-safe Python dataclass with no framework imports. It describes sequence features, hidden size, layer count, tanh/relu, final/sequence selection, bias and linear head. Runtime batch and time dimensions are inferred, never embedded in weights.
+
+`rnn_adapter.py` builds nn.RNN plus a linear head, traces every recurrent layer, executes explicit cell arithmetic, controlled autograd experiments and packed variable-length demonstrations. The cell trace uses PyTorch operations equivalent to RNNCell. No math lives in UI. `rnn_training.py` provides offline independent order-sensitive sequences and disjoint sine source series, deterministic splits, mini-batch SGD/Adam, validation and separate held-out evaluation. No fitted preprocessing is needed: generated raw values are used directly. Model initialization and shuffling use local seeded RNGs.
+
+`rnn_graphs.py` supplies sequence transitions, hidden-state heatmaps and gradient/prediction plots. `rnn_content.py` supplies concepts, formulas, dimensions, applications, guided experiments and quizzes. `rnn_ui.py` selects one active section so training runs only on explicit action; trained runs are invalidated by configuration changes. Progress remains portable v1 JSON keyed by `rnn`.
+
+Validation: independent RNNCell/nn.RNN parity, shapes/counts/serialization, dense/CNN compatibility, chain-rule and truncation checks, clipping/update identity, dataset isolation and poisoned held-out checks, actual training and AppTest interactions. Full existing suite includes dense ONNX export; recurrent ONNX export is outside M6. Running localhost agent API checks supplement headless AppTest; browser layout is a separate verification category. See ADR-0002.

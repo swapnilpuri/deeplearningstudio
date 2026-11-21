@@ -1,55 +1,46 @@
-# M5 — Implementation and Verification Report
+# M5 implementation and verification report
 
-Date: 2026-11-21
+Date: 2026-11-21. Starting commit: `7b1c0d1b779012e21384235852d42e2c23de4041`. Branch: `feature/m5-final-validation`. See [handoff](M5_HANDOFF.md) for revision/delivery status and [audit](M5_AUDIT.md) for baseline gaps.
 
-## Baseline
+## Implemented
 
-Repository `swapnilpuri/deeplearningstudio`, master commit observed via GitHub connector:
-`693e9e3e39cdb4ab061316d9fc8def6b78cc59c7`.
+- Twenty beginner topics with formulas, dimensions, numerical examples, logits/loss and gradients.
+- Real PyTorch rectangular/RGB convolution: stride, padding, dilation, editable per-filter/per-channel kernels, persistent edits, bias, sampled-window highlights, channel contributions and pre/post activation maps.
+- Max/average pooling, exact arithmetic, highlighted windows, formula assumptions and single-cell UI support.
+- Configurable one-to-three-block builder, optional dense hidden layers, inferred Flatten width, weight/bias shapes, parameter counts, actual intermediate tensors/logits and JSON export.
+- Reproducible Digits SGD/Adam mini-batch training, fixed /16 normalization, stratified disjoint splits, train/validation curves, convolution gradients, initial/trained filters and explicitly requested test evaluation with confusion matrix and mistakes.
+- SGD/Adam one-step autograd inspection, input image, ordered code steps, before/gradient/after tensors and loss, deterministic numerical gradient check.
+- Twelve quiz questions, six experiments with expected observations, preserved M4 progress JSON and dense lessons.
+- Fixed CSV download data with shared exporter retaining validation, gradient and future metrics. Existing UTF-8 source fix retained.
+- Removed tracked bytecode from Git without deleting local caches; added ignore rules.
 
-Inspected M4 files: `app.py`, `learning/spec.py`, `learning/ui.py`, `learning/content.py`, `learning/progress.py`, `learning/pytorch_adapter.py`, `requirements.txt`, `tests/test_learning.py`; reviewed README. M4 existing workspaces and dense APIs are preserved by designing a separate CNN overlay and a minimal UI hook. No changes made to master.
+## Executed verification
 
-## Completed in overlay
-
-- CNN v2 serializable, framework-neutral model specifications and layer-shape propagation.
-- PyTorch CNN model builder, trace, cross-correlation explorer and pooling explorer.
-- Preset edge, blur, sharpen and identity filters (3×3); custom seeded filter entry.
-- Two-block CNN architecture builder, inferred flatten width, parameter inspection.
-- Deterministic Digits train/validation/test split; mini-batch training with Adam/SGD, validation curves and final test evaluation.
-- SGD autograd demonstration, gradient norms, initial/trained filter comparison.
-- Interactive Streamlit CNN lesson with concepts, quizzes, practice, progress JSON.
-- Volume 3, roadmap and architecture decision record.
-- `install_m5.py` injects the lesson route into a real M4 checkout without replacing the app.
-
-## Actual checks
+Windows host; project Python 3.12.12; torch 2.15.0+cpu; Streamlit 1.67.0; scikit-learn 1.9.1.
 
 | Check | Result |
 |---|---|
-| CNN unit tests run in local CPU environment | 11 passed |
-| PyTorch installed in test environment | 2.10.0+cpu |
-| scikit-learn installed in test environment | 1.8.0 |
-| Existing M4 regression suite before/after | **Untested**; source checkout unavailable locally |
-| Streamlit UI smoke test | **Untested**; Streamlit not installed in execution runtime |
-| Windows 11 and uv install | **Untested**; running on Linux container |
-| Existing v3 ONNX export path | **Untested** |
-| GitHub branch / pull request | **Blocked**; integration returned HTTP 403 `Resource not accessible by integration` |
-| Standalone full source ZIP | **Not delivered**; base repository cannot be cloned into file runtime |
+| Baseline full suite before source edits | 41 passed in 3.89s |
+| Expanded suite | 70 passed in 13.14s on final rerun (earlier full run: 24.24s) |
+| Edited-source type check | ty: all checks passed |
+| CNN arithmetic | PyTorch comparison, rectangular/dilated RGB, shape/parameter counts, pooling, SGD/Adam and double-precision gradcheck |
+| Leakage prevention | Disjoint indices, exact fixed /16 normalization, poisoned validation/test values leave learned weights identical for SGD and Adam |
+| Headless AppTest | Four workspaces, both dense lessons, seven CNN sections, one-cell controls, training/evaluation/config invalidation |
+| Running localhost Streamlit agent API | All workspaces/sections ready; RGB+dilation+bias, three blocks and two hidden dense layers, SGD/Adam, gradcheck, training and explicit final evaluation |
+| Existing ONNX path | Actual dynamo=True export, onnx.load, checker and initializer check passed |
 
-## Release classification
+The first restricted expanded run passed 69 tests but ONNX fixture setup hit Windows temporary-directory permissions. The full run outside that restriction passed all 70; no tests were disabled or skipped.
 
-**M5 partial implementation — NOT ACCEPTED AS COMPLETE.** This deliverable is an M5 overlay applied to the latest M4 source, **not** a standalone v5 application. Do not mark the milestone complete until the full combined source is built, the existing M4 suite and UI checks run successfully, and a complete v5 ZIP is validated.
+## Acceptance status
 
-## Next verification on Windows
+**Implementation and automated/runtime acceptance passed. Browser/manual acceptance is unverified; M5 is not marked fully accepted.**
 
-```powershell
-git clone https://github.com/swapnilpuri/deeplearningstudio.git
-cd deeplearningstudio
-# extract M5 overlay to a separate folder
-python ..\deeplearningstudio-m5-patch\install_m5.py .
-uv venv --python 3.12
-uv pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m pytest -v
-.\.venv\Scripts\python.exe -m streamlit run app.py
-```
+No known failing automated requirement remains. Browser layout, browser downloads/file-picker interactions, Netron, optional MNIST download, fresh uv installation and ONNX Runtime parity were not tested. The builder offers bounded teaching controls (one to three blocks, shared kernel/padding/pooling and optional dense widths); the neutral schema supports up to 32 operators, including rectangular/dilated convolution. Digits training settings are independent of builder experiments and the original Training Studio. CNN ONNX export and TensorFlow are outside M5.
 
-Before opening a PR, manually verify both existing lessons and all three original v3 workspaces, progress export/import, CNN training, and Windows/uv compatibility. Package the entire successfully tested repository, excluding `.venv`, caches, secrets and large datasets.
+A tiny one-epoch localhost smoke run produced 26.67% test accuracy. This verifies the evaluation flow, not model quality; avoid tuning against repeated test evaluations. Dependency ranges remain unlocked. Volumes 1 and 2 are preserved.
+
+The actual Training Studio CSV HTTP download was also fetched and parsed successfully with validation and gradient columns. Browser visual checking was attempted but unavailable: browser host unavailable and Windows Computer Use could not confidently determine Chrome URL.
+
+## Git delivery
+
+Implementation commit: `c3e6f0eda3d75c47a82128470efba11e3f9021a9`. Feature branch pushed; [draft PR #2](https://github.com/swapnilpuri/deeplearningstudio/pull/2) targets master. No merge performed. The handoff records delivery history and the exact branch tip is available with `git rev-parse HEAD`.
