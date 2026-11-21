@@ -22,11 +22,12 @@ class CNNTrainingConfig:
     pooling: str = 'maxpool2d'
 
     def __post_init__(self):
-        if not 1 <= self.epochs <= 100 or not 1 <= self.batch_size <= 512:
+        if any(not isinstance(v,int) or isinstance(v,bool) for v in (self.epochs,self.batch_size)) or not 1 <= self.epochs <= 100 or not 1 <= self.batch_size <= 512:
             raise ValueError('Invalid epochs/batch size')
         if not 0 < self.learning_rate <= 1 or self.optimizer not in ('SGD','Adam'):
             raise ValueError('Invalid optimizer/learning rate')
         if self.pooling not in ('maxpool2d','avgpool2d'): raise ValueError('Invalid pooling')
+        digits_spec(self.filters1,self.filters2,self.pooling,self.seed)
 
 
 def digits_splits(seed=42):
@@ -48,7 +49,6 @@ def digits_splits(seed=42):
 
 
 def train_digits(config: CNNTrainingConfig):
-    torch.manual_seed(config.seed)
     split=digits_splits(config.seed)
     model=CNNAdapter().build(digits_spec(config.filters1,config.filters2,config.pooling,config.seed))
     initial={name:p.detach().clone() for name,p in model.named_parameters() if name.endswith('weight') and p.ndim==4}

@@ -78,7 +78,7 @@ class CNNModelSpec:
     def __post_init__(self):
         if self.schema_version != 2 or self.architecture != 'cnn':
             raise ValueError('Unsupported CNN schema version/architecture')
-        if self.input_channels not in (1,3) or not 4 <= self.image_height <= 128 or not 4 <= self.image_width <= 128:
+        if any(not isinstance(v,int) or isinstance(v,bool) for v in (self.input_channels,self.image_height,self.image_width)) or self.input_channels not in (1,3) or not 4 <= self.image_height <= 128 or not 4 <= self.image_width <= 128:
             raise ValueError('CNN input must be 1/3 channels and spatial dimensions 4..128')
         if not 1 <= len(self.layers) <= 32:
             raise ValueError('CNN needs 1..32 operators')
@@ -95,6 +95,7 @@ class CNNModelSpec:
             old = shape
             count = 0; weight_shape = None
             if layer.kind == 'conv2d':
+                assert layer.out_channels is not None  # validated by CNNLayerSpec
                 if len(shape) != 4: raise ValueError('Conv2d expects NCHW input')
                 n, cin, h, w = shape
                 kh, kw = layer.kernel_size; sh,sw=layer.stride; ph,pw=layer.padding; dh,dw=layer.dilation
@@ -111,11 +112,13 @@ class CNNModelSpec:
                 if len(shape) != 4: raise ValueError('Flatten expects NCHW input')
                 shape = (shape[0],math.prod(shape[1:]))
             elif layer.kind == 'linear':
+                assert layer.out_features is not None  # validated by CNNLayerSpec
                 if len(shape) != 2: raise ValueError('Linear requires Flatten first')
                 weight_shape = (layer.out_features, shape[1])
                 count = math.prod(weight_shape)+(layer.out_features if layer.bias else 0)
                 shape = (shape[0],layer.out_features)
-            rows.append({'index':i,'operator':layer.kind,'shape':shape,'parameters':count,'weights':weight_shape})
+            rows.append({'index':i,'operator':layer.kind,'input_shape':old,'shape':shape,'parameters':count,'weights':weight_shape,
+                         'bias':(weight_shape[0],) if weight_shape and layer.bias else None})
         return rows
 
     def as_dict(self):

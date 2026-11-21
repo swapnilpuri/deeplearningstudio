@@ -1,5 +1,15 @@
 """Educational metadata is independent from the frontend and runtime backend."""
-LESSONS = {
+from typing import TypedDict
+
+
+class Lesson(TypedDict):
+    title: str
+    goal: str
+    concepts: list[tuple[str,str]]
+    questions: list[tuple[str,list[str],int,str]]
+
+
+LESSONS: dict[str,Lesson] = {
  'feed_forward': {
     'title': 'Feed-Forward Neural Network',
     'goal': 'Understand a single hidden layer and the path from inputs to predictions.',

@@ -2,9 +2,9 @@
 
 | Milestone | Scope | Status |
 |---|---|---|
-| M1–M3 | Neural Network Studio, Training Studio, Dataset Management | Existing in source repository; regression pending M5 integration |
-| M4 | Feed-forward and deep network lessons, progress JSON | Existing master branch; regression pending M5 integration |
-| M5 | CNN concepts, explorers, builder, PyTorch Digits training, gradient trace | Overlay implemented; UI/Windows/full-regression verification pending |
+| M1–M3 | Neural Network Studio, Training Studio, Dataset Management | Regression and headless UI smoke passed; ONNX export/checker passed |
+| M4 | Feed-forward and deep network lessons, progress JSON | Regression, legacy progress and both lesson runtime checks passed |
+| M5 | CNN concepts, explorers, builder, PyTorch Digits training, gradient trace | Implemented; automated and running-app validation passed on Windows; browser/manual acceptance unverified |
 | Future | RNN; LSTM; embedding network | Planned |
 | Future | Single-head attention; multi-head attention | Planned |
 | Future | Transformer encoder; Transformer decoder; Mini GPT | Planned |

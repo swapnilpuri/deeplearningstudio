@@ -3,7 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 
 
-def heatmap(values,title='',highlight=None):
+def heatmap(values,title='',highlight=None,positions=None):
     a=np.asarray(values)
     if a.ndim!=2: raise ValueError('heatmap expects 2D array')
     fig=go.Figure(go.Heatmap(z=a,colorscale='RdBu',zmid=0,text=np.round(a,3),texttemplate='%{text}',
@@ -12,6 +12,8 @@ def heatmap(values,title='',highlight=None):
         top,left,h,w=highlight
         fig.add_shape(type='rect',x0=left-.5,x1=left+w-.5,y0=top-.5,y1=top+h-.5,
                       line={'color':'limegreen','width':4})
+    if positions:
+        fig.add_trace(go.Scatter(x=[c for r,c in positions],y=[r for r,c in positions],mode='markers',marker={'color':'limegreen','size':12,'symbol':'circle-open'},name='Sampled positions'))
     fig.update_yaxes(autorange='reversed',scaleanchor='x')
     fig.update_layout(title=title,height=max(280,min(600,40*len(a)+100)),margin=dict(l=20,r=20,t=60,b=20))
     return fig
