@@ -1,6 +1,6 @@
-# DeepLearningStudio — M5 CNN Learning Studio
+# DeepLearningStudio — M6 RNN Learning Studio
 
-An interactive Streamlit learning application with four workspaces: **Neural Network Studio**, **Dataset Management**, **Training Studio**, and **Learning Studio** with feed-forward, deep and convolutional neural network lessons.
+An interactive Streamlit learning application with four workspaces: **Neural Network Studio**, **Dataset Management**, **Training Studio**, and **Learning Studio** with feed-forward, deep, convolutional and recurrent neural network lessons.
 
 ## Requirements
 
@@ -38,6 +38,7 @@ Open `http://localhost:8501` in your browser. If `uv` is missing, install it fro
 ## Detailed documentation
 
 - [Volume 1 — Feed-Forward Neural Networks](docs/VOLUME_1_FOUNDATIONS.md) — neurons, activations, matrix shapes, MSE, gradients, guided forward and backprop tutorials.
+- [Volume 4 — Recurrent Neural Networks](docs/VOLUME_4_RNN.md) — recurrence, sequence tensors, BPTT, padding, classification and forecasting tutorials, experiments and quiz answers.
 - [Volume 3 — Convolutional Neural Networks](docs/VOLUME_3_CNN.md) — convolution/pooling illustrations, tensor shapes, training workflow, backpropagation, tutorials and quiz explanations.
 - [Volume 2 — Deep Neural Networks](docs/VOLUME_2_DEEP_NETWORKS.md) — deep layers, chain rule, gradient flow, activation/width comparisons, adapter design and experiments.
 
@@ -72,7 +73,7 @@ app.py (sidebar/workspace routing; existing v3 functionality)
         └── visualization/learning_graphs.py # reusable tensor/gradient plots
 ```
 
-`ModelSpec` is a framework-neutral DTO. The adapter registry currently exposes **PyTorch only**. TensorFlow/Keras is planned for a future milestone, not shipped here. CNN is implemented in M5. RNN, LSTM, embeddings, attention, Transformers and Mini GPT remain planned.
+`ModelSpec` is a framework-neutral DTO. The adapter registry currently exposes **PyTorch only**. TensorFlow/Keras is planned for a future milestone, not shipped here. CNN is implemented in M5; RNN is implemented in M6 using a separate schema v3. LSTM, embeddings, attention, Transformers and Mini GPT remain planned.
 
 ## Tests and validation
 
@@ -99,3 +100,11 @@ Choose Learning Studio → Convolutional Neural Network (CNN), then a CNN sectio
 The builder, one-step demonstration and training laboratory are independent experiments. Model definitions use framework-neutral CNN schema v2 beside unchanged dense schema v1. No TensorFlow/Keras adapter is included.
 
 Baseline tests: **41 passed**. Expanded Windows suite: **70 passed**, including four-workspace headless UI checks and real dense ONNX export/checker. Running localhost Streamlit interactions and edited-source type checks also passed. Browser visual layout, downloads/file-picker interactions, Netron, optional MNIST download and fresh installation remain unverified; M5 awaits manual acceptance. See the current [completion report](docs/milestones/M5_COMPLETION_REPORT.md), [handoff](docs/milestones/M5_HANDOFF.md), [audit](docs/milestones/M5_AUDIT.md) and [roadmap](docs/ROADMAP.md). Historical `TEST_REPORT.md` records the earlier milestone, not current M5 verification.
+
+## M6 — RNN Learning Studio
+
+Select Learning Studio → Recurrent Neural Network (RNN). Nine sections cover 22 concepts; editable cell inputs/weights and step arithmetic; unrolled states; batch/time-first tensors; stacked recurrent architecture with final or sequence heads; offline order-sensitive, memory and sine datasets; SGD/Adam classification and forecasting; controlled BPTT/clipping/detach; variable lengths; and fourteen quiz questions with portable progress.
+
+Training is explicit and independent of the architecture explorer. Changing settings clears stale models and test results. Held-out evaluation is a separate action; forecasting uses direct multi-horizon regression. Recurrent specs remain framework-neutral; dense/CNN formats and progress v1 remain compatible. No recurrent ONNX export or LSTM/GRU/Transformer lesson is included.
+
+M5 baseline: **70 passed**. Final M6 regression: **135 passed** on Windows, including old ONNX checks and 65 new recurrent/runtime tests. See [M6 completion](docs/milestones/M6_COMPLETION_REPORT.md), [handoff](docs/milestones/M6_HANDOFF.md), [acceptance](docs/milestones/M6_ACCEPTANCE_CRITERIA.md) and [design](docs/milestones/M6_DESIGN.md) for final evidence and verification limits. Browser visual acceptance remains separate from headless and localhost runtime checks.
