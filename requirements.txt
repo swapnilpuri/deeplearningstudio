@@ -1,0 +1,13 @@
+torch>=2.6,<3
+numpy>=1.26,<3
+streamlit>=1.40,<2
+plotly>=5.24,<7
+onnx>=1.17,<2
+onnxscript>=0.2
+netron
+pytest>=8,<10
+
+pandas>=2.2,<3
+scikit-learn>=1.5,<2
+openpyxl>=3.1,<4
+# Optional for real MNIST downloads: uv pip install torchvision
