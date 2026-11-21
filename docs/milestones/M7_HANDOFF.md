@@ -40,13 +40,22 @@ inspection because the Chrome window might expose unrelated private tabs. The us
 then explicitly approved local-app inspection. The resumed attempt selected the
 local-app window and entered the test-server address, but Computer Use stopped
 because it could not determine the browser URL confidently enough to enforce policy.
-No automated browser acceptance pass is claimed. On 2026-11-21, the user started
+No browser acceptance pass was claimed at that checkpoint. On 2026-11-21, the user started
 Streamlit and supplied a screenshot confirming the LSTM learning-path entry and
 Concepts & mathematics / RNN recap rendering, formula, gate diagram, preview sliders
 and seven gate/state plots. This is static visual evidence for that screen only.
-Other section layouts, chart hover, editor interaction and browser file-picker/
-download round trip remain unverified. Fresh install, Netron and independent review
-were not run. No known failing automated checks. Recurrent ONNX export and
+Later on 2026-11-21 the user provided a dedicated single-tab Edge window on port
+8767. Core browser verification then passed: lesson/section navigation, cell
+Previous/Next, gate arithmetic tables, memory reversal and state plots, time-first
+sequence architecture with 298 parameters and final h/c shapes (2,2,4), both actual
+train/test tasks, measured RNN/LSTM curves, SGD/Adam BPTT, packed length validation,
+quiz/progress rendering, saved notes and progress download. Downloaded schema-v1
+JSON contains the exact entered notes. See completion report for measured results.
+Intermittent computer-use timeouts recovered after reselecting the window; no app
+defect was found. File-picker inspection was privacy-blocked by automatic review;
+dialog dismissed. Browser import/load, input-table editing, full quiz submission,
+deliberate hover and spec download remain unverified. Fresh install, Netron and
+independent review were not run. No known failing automated checks. Recurrent ONNX export and
 variable-length task training are outside scope; packing/masking is demonstrated.
 
 Implementation commit: `8c23761535cae80d38bb2af7126110e914b272b2`, pushed and verified

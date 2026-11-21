@@ -16,11 +16,19 @@ is recorded below; passing unit checks do not establish browser visual acceptanc
 | Volume 5, roadmap, README, ADR, handoff | Implemented and reviewed for formulas, dimensions, worked examples and actual verification evidence |
 | Feature commit and PR against master | Passed: pushed 8c23761535cae80d38bb2af7126110e914b272b2; draft PR #4 targets master; open and unmerged |
 
-Initial browser rendering is confirmed by the user's 2026-11-21 screenshot:
-LSTM entry, Concepts & mathematics / RNN recap, formula, diagram, sliders and all
-seven preview plots. This is a static check of one screen. Other section layouts,
-hover/editor/file-picker/download round-trip and independent acceptance review
-remain unverified. Following explicit user approval, browser automation stopped
-because Computer Use could not confidently determine the URL to enforce policy.
+Browser verification on 2026-11-21 subsequently succeeded in a dedicated single-tab
+Edge window at http://127.0.0.1:8767. Checked LSTM selection and section navigation,
+cell Previous/Next, rendered gate arithmetic, reversed memory input/plots, two-layer
+time-first sequence architecture (298 parameters), memory and forecast train/test,
+RNN/LSTM training/comparison curves, SGD/Adam BPTT and clipping, invalid/valid packed
+lengths, quiz/progress rendering, saved notes and actual JSON download. Downloaded
+JSON was read back and contains schema v1 and the exact entered LSTM notes.
+
+Still unverified in a browser: input-table cell editing, full quiz submission,
+deliberate chart hover, specification download, and progress upload/load round trip.
+The file picker opened, but automatic review rejected inspecting it because local
+filenames could be exposed; it was dismissed without importing. Independent review
+is pending. Prior browser host/URL restrictions were overcome for core workflows
+by using the dedicated window; no full manual acceptance claim is made.
 No merge authorized. Overall status: implementation/automated/runtime criteria
 passed; full independent/manual acceptance remains pending.

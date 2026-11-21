@@ -104,8 +104,8 @@ ONNX export. No GRU internals/embeddings/attention/Transformers. Equal-width
 comparison has unequal parameter counts; optional dropout is LSTM-only and
 disclosed. Multi-seed performance conclusions were not tested or claimed.
 
-**Acceptance: implementation and automated/runtime checks passed; full independent
-and browser/manual acceptance pending.** See M7_ACCEPTANCE_CRITERIA.md and
+**Acceptance: implementation, automated/runtime and core browser workflows passed;
+remaining manual checks and independent acceptance pending.** See M7_ACCEPTANCE_CRITERIA.md and
 M7_HANDOFF.md for criterion mapping, files and continuation commands.
 
 ## Git delivery
@@ -118,6 +118,44 @@ The connector could read the PR but creation returned 403; CLI creation succeede
 No merge performed. Final containing documentation commit: `git rev-parse HEAD`.
 The follow-up changes documentation only; no source changes after the final full
 regression, so tests were not repeated. Remaining acceptance checks are listed above.
+
+## Dedicated browser verification — 2026-11-21
+
+The user opened a dedicated single-tab Edge window at http://127.0.0.1:8767,
+80% browser zoom. Native accessibility and screenshots then verified core browser
+workflows, superseding the earlier browser-access limitation for these checks:
+
+- Learning Studio/LSTM selection and navigation through the lesson sections.
+- Cell Previous/Next changed the selected step 0 → 1 → 0; numerical gate matrices,
+  activation/arithmetic tables rendered. Memory sequence reversal updated the plots
+  and side-by-side cell/hidden heatmaps. No visible rendering error in inspected views.
+- Two-layer I=2,H=4,C=2 builder: 298 parameters, time-first output (5,2,4), final
+  hidden/cell (2,2,4), sequence linear head (5,2,2); diagram/tables rendered correctly.
+- Actual browser memory training and explicit evaluation: 240 samples, length 12,
+  distance 7, noise .05, seed 42, 5 epochs, batch 32, Adam .01, H=12, one layer,
+  clip 1. Test CE 0.696761, accuracy 0.437500. Training plots and parameter changes shown.
+- Switched to forecasting; stale results cleared. Same controls, horizon 1:
+  test MSE 0.111243, MAE 0.292749. 733 parameters versus memory model's 746.
+  These runs verify workflows, not general learning quality.
+- RNN/LSTM comparison training produced actual overlaid train/validation curves
+  and separate summaries: RNN 206 parameters, LSTM 746 at equal hidden width.
+  No general superiority conclusion drawn from this five-epoch run.
+- BPTT default SGD: loss 0.544184 → 0.479260; Adam: → 0.401718. Global gradient
+  norm 6.953316 → 1.000000 with threshold 1. Gate-gradient table and state plots rendered.
+- Packed lengths 0,2 displayed the validation warning; 6,2,4 restored execution
+  with final hidden/cell shapes (1,3,3).
+- Quiz/progress controls rendered; entered and saved experiment notes, downloaded
+  learning-progress.json. Read back the downloaded JSON: schema_version=1 and
+  exercise_notes.lstm exactly equals "Browser verification: hidden and cell states differ."
+
+Computer-use scrolling/state capture timed out intermittently, then recovered by
+reselecting the same dedicated window. No application defect or code change was
+identified. The import file picker opened, but automatic review rejected its
+inspection because unrelated local filenames might be exposed; it was dismissed.
+Browser upload/load round trip remains unverified. Input-table cell editing, full
+quiz submission, deliberate chart hover and spec download also remain unexecuted
+in the browser (headless computation/workflow checks still passed as recorded).
+Independent acceptance review remains pending. Test server left running for user use.
 The final containing commit is resolved using `git rev-parse HEAD` because a
 document cannot name its own containing commit. Delivery details will be appended
 after the remote actions complete.
