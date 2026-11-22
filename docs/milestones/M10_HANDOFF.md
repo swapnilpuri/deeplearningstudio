@@ -6,7 +6,9 @@
 - Baseline: `3baaea40a6dc184c5f580ccbd49eba0cec3a638a`, merged M9 master,
   verified against fetched `deeplearningstudio/master`.
 - Branch: `feature/m10-multihead-transformer-blocks`.
-- Current implementation commit / PR: recorded after Git delivery below.
+- Implementation commit: `5639e88` (full source and documentation).
+- Pushed branch; [draft PR #7](https://github.com/swapnilpuri/deeplearningstudio/pull/7)
+  targets master. Master has not been merged.
 
 Completed all twelve sections, M8 input reuse, M9-based attention, equal-head
 validation and probability plots, concatenation/projection/comparison, residuals,
@@ -36,3 +38,10 @@ git switch feature/m10-multihead-transformer-blocks
 Choose Learning Studio → Multi-Head Attention & Transformer Blocks. Next task:
 review the PR and browser appearance, then consider M11. Never merge master
 without explicit authorization.
+
+Git delivery: `git push -u deeplearningstudio feature/m10-multihead-transformer-blocks`
+succeeded. GitHub connector create_pull_request returned 403 (resource inaccessible
+to integration). Authenticated `gh pr create --draft` with a temporary body file
+succeeded. A restricted `gh auth status` had reported an invalid keyring token;
+normal-permission PR creation succeeded without changing credentials. Final
+documentation commit records delivery and follows the implementation commit.
