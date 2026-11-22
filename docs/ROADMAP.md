@@ -8,7 +8,7 @@
 | M6 | RNN cell/unrolling, recurrent schema, sequence datasets/training, BPTT, padding, quizzes, Volume 4 | Implemented; automated regression passed; browser visual acceptance unverified |
 | M7 | LSTM gates/states, schema v4, builder, memory/forecast training, RNN comparison, BPTT, packing, Volume 5 | Merged; 181 automated tests and core browser workflows passed; remaining manual/independent acceptance pending |
 | M8 | Embedding lookup/gradients, tokenization, skip-gram, retrieval, pooling, positions, schema v5, text classification, Volume 6 | Implemented; 253 regression tests, real-server and core browser workflows/file roundtrip passed; independent acceptance pending |
-| M9 | Single-head self-attention | Planned |
+| M9 | Single-head self-attention, projections, masking, contextual outputs, routing training, exercises, Volume 7 | Implemented; validation evidence in M9 completion report; independent acceptance pending |
 | M10 | Multi-head attention | Planned |
 | M11 | Transformer encoder | Planned |
 | M12 | Transformer decoder | Planned |
@@ -30,3 +30,7 @@ train-only vocabulary fitting, masked pooling and optional positional inputs
 preserve earlier schemas and progress v1. Offline skip-gram and classification
 provide measured learning examples, without pretrained downloads or attention.
 See [Volume 6](VOLUME_6_EMBEDDINGS.md) and [M8 evidence](milestones/M8_COMPLETION_REPORT.md).
+
+M9 reuses M8 embeddings and progress v1, adding framework-independent validation and
+PyTorch differentiable single-head primitives. See [Volume 7](VOLUME_7_SELF_ATTENTION.md)
+and [M9 evidence](milestones/M9_COMPLETION_REPORT.md). Multi-head composition remains M10.
