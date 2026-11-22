@@ -6,6 +6,7 @@ import tempfile
 from pathlib import Path
 
 import streamlit as st
+from learning.navigation import render_learning_section_navigation
 import torch
 
 from models.feed_forward import ACTIVATIONS, build_model, generate_code
@@ -84,7 +85,7 @@ elif studio == 'Neural Network Studio':
     a.metric('Neurons', sum(sizes))
     b.metric('Weight connections', sum(m.weight.numel() for m in linear))
     c.metric('Trainable parameters', sum(p.numel() for p in model.parameters()))
-    graph, inspect, forward, export = st.tabs(['Architecture', 'Weights & biases', 'Forward pass', 'Code & ONNX'])
+    graph, inspect, forward, export = render_learning_section_navigation(['Architecture', 'Weights & biases', 'Forward pass', 'Code & ONNX'], 'neural', lazy=False).values()
     with graph:
         st.plotly_chart(network_figure(sizes), width="stretch")
         st.caption('Each line is one learnable connection; the displayed graph is an architecture diagram, not a computational-operator graph.')
@@ -264,7 +265,7 @@ else:
         v1, v2 = st.columns(2)
         v1.metric('Validation loss', f"{exp.history[-1]['val_loss']:.5f}")
         v2.metric('Validation accuracy' if exp.classification else 'Validation RMSE', f"{exp.history[-1]['val_score']*100:.1f}%" if exp.classification else f"{exp.history[-1]['val_score']:.5f}")
-    overview, curves, gradients, params, export = st.tabs(['Data & predictions', 'Learning curves', 'Gradients', 'Model parameters', 'Export trained model'])
+    overview, curves, gradients, params, export = render_learning_section_navigation(['Data & predictions', 'Learning curves', 'Gradients', 'Model parameters', 'Export trained model'], 'training', lazy=False).values()
     with overview:
         if exp.x.shape[1] == 2 and exp.classification and exp.sizes[-1] == 2:
             st.plotly_chart(decision_figure(exp), width="stretch")

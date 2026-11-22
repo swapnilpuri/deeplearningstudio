@@ -9,7 +9,8 @@ def start(section=SECTIONS[0]):
     app = AppTest.from_file(str(Path(__file__).resolve().parents[1]/'app.py'),default_timeout=45).run()
     app.radio(key='workspace').set_value('Learning Studio').run()
     app.selectbox(key='learn_lesson').set_value('attention').run()
-    app.selectbox(key='att_section').set_value(section).run()
+    app.session_state['att_section'] = section
+    app.run()
     assert not app.exception and not app.warning
     return app
 
@@ -71,7 +72,8 @@ def test_m8_learned_weights_and_manual_projections():
     app.checkbox(key='att_edit').check().run()
     assert not app.exception and not app.warning
     app.selectbox(key='learn_lesson').set_value('embedding').run()
-    app.selectbox(key='emb_section').set_value('Word embedding training').run()
+    app.session_state['emb_section'] = 'Word embedding training'
+    app.run()
     app.slider(key='emb_word_epochs').set_value(1).run()
     app.button(key='emb_word_train').click().run()
     app.selectbox(key='learn_lesson').set_value('attention').run()

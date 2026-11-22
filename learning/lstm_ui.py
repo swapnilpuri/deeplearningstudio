@@ -2,6 +2,7 @@
 import json
 import pandas as pd
 import streamlit as st
+from .navigation import render_learning_section_navigation
 import torch
 from .lstm_spec import LSTMModelSpec
 from .lstm_adapter import GATES, LSTMAdapter, cell_trace, demo_cell, controlled_memory, gradient_experiment, variable_length_demo
@@ -17,14 +18,14 @@ SECTIONS = ['Concepts & mathematics','Cell & unrolling','Gate & state laboratory
 
 
 def _concepts():
-    index = st.selectbox('LSTM concept',range(len(TOPICS)),format_func=lambda i:TOPICS[i][0],key='lstm_topic')
+    index = st.selectbox('LSTM concept',range(len(TOPICS)),format_func=lambda i:TOPICS[i][0],key='lstm_topic', persist_state='session')
     title,explanation,formula,shapes,example,use,explorer = TOPICS[index]
     st.subheader(title);st.write(explanation);st.latex(formula)
     st.write('Dimensions: '+shapes);st.write('Numerical example: '+example)
     st.write('Practical use: '+use);st.info('Explore this in: '+explorer)
     st.graphviz_chart(gate_diagram())
-    length = st.slider('Preview sequence length',2,50,12,key='lstm_preview_t')
-    forget = st.slider('Preview controlled forget value',0.,1.,.95,.01,key='lstm_preview_f')
+    length = st.slider('Preview sequence length',2,50,12,key='lstm_preview_t', persist_state='session')
+    forget = st.slider('Preview controlled forget value',0.,1.,.95,.01,key='lstm_preview_f', persist_state='session')
     _plot(state_panels(controlled_memory(length,forget)),'lstm_preview','Fixed-gate memory and state preview')
     st.caption('Fixed gate interventions isolate memory effects. The Cell explorer computes learned gates from x and previous h. ⊙ means element-wise multiplication.')
 
@@ -38,15 +39,15 @@ def _cell():
     i = a.slider('Input features',1,5,2,key='lstm_cell_i')
     h = b.slider('Cell hidden size',1,8,3,key='lstm_cell_h')
     t = c.slider('Cell sequence length',2,20,6,key='lstm_cell_t')
-    seed = int(st.number_input('Cell seed',0,2147483647,42,key='lstm_cell_seed'))
-    scale = st.slider('Weight scale',0.,1.5,.5,.05,key='lstm_cell_scale')
-    h0 = st.number_input('Initial hidden value',value=0.,key='lstm_cell_h0')
-    c0 = st.number_input('Initial cell value',value=0.,key='lstm_cell_c0')
+    seed = int(st.number_input('Cell seed',0,2147483647,42,key='lstm_cell_seed', persist_state='session'))
+    scale = st.slider('Weight scale',0.,1.5,.5,.05,key='lstm_cell_scale', persist_state='session')
+    h0 = st.number_input('Initial hidden value',value=0.,key='lstm_cell_h0', persist_state='session')
+    c0 = st.number_input('Initial cell value',value=0.,key='lstm_cell_c0', persist_state='session')
     x,wi,wh,bi,bh = demo_cell(i,h,t,seed,scale)
     x = torch.tensor(st.data_editor(pd.DataFrame(x.numpy()),key=f'lstm_x_{i}_{t}_{seed}',alt='Editable LSTM input sequence').to_numpy(),dtype=torch.float32)
-    if st.checkbox('Edit LSTM weights, biases and initial vectors as JSON',key='lstm_edit'):
+    if st.checkbox('Edit LSTM weights, biases and initial vectors as JSON',key='lstm_edit', persist_state='session'):
         default = dict(w_ih=wi.tolist(),w_hh=wh.tolist(),b_ih=bi.tolist(),b_hh=bh.tolist(),h0=[h0]*h,c0=[c0]*h)
-        raw = st.text_area('LSTM cell JSON',json.dumps(default),key=f'lstm_json_{i}_{h}_{seed}_{scale}')
+        raw = st.text_area('LSTM cell JSON',json.dumps(default),key=f'lstm_json_{i}_{h}_{seed}_{scale}', persist_state='session')
         try:
             parsed = json.loads(raw)
             wi,wh,bi,bh,initial_h,initial_c = [torch.tensor(parsed[k],dtype=torch.float32) for k in ('w_ih','w_hh','b_ih','b_hh','h0','c0')]
@@ -58,8 +59,8 @@ def _cell():
     with st.container(horizontal=True):
         st.button('Previous step',on_click=_move_step,args=(-1,t-1),key='lstm_previous')
         st.button('Next step',on_click=_move_step,args=(1,t-1),key='lstm_next')
-    selected = st.slider('Time step (zero-based)',0,t-1,key='lstm_step')
-    unit = st.selectbox('Selected unit',range(h),key=f'lstm_unit_{h}')
+    selected = st.slider('Time step (zero-based)',0,t-1,key='lstm_step', persist_state='session')
+    unit = st.selectbox('Selected unit',range(h),key=f'lstm_unit_{h}', persist_state='session')
     step = steps[selected]
     _plot(unrolled_figure(x.numpy(),values['hidden'].detach().numpy(),selected),'lstm_unroll','Unrolled hidden states sharing gate parameters')
     _plot(state_panels({**values,'input_vector':x},unit),'lstm_states','Computed inputs, four gates, cell and hidden states')
@@ -77,19 +78,19 @@ def _cell():
     st.code(f'c[{unit}] = {step["forget"][unit].item():.6f} × {step["previous_c"][unit].item():.6f} + '
             f'{step["input"][unit].item():.6f} × {step["candidate"][unit].item():.6f} = {step["cell"][unit].item():.6f}\n'
             f'h[{unit}] = {step["output"][unit].item():.6f} × tanh({step["cell"][unit].item():.6f}) = {step["hidden"][unit].item():.6f}')
-    gate = st.selectbox('Gate heatmap',GATES,key='lstm_heatmap_gate')
+    gate = st.selectbox('Gate heatmap',GATES,key='lstm_heatmap_gate', persist_state='session')
     _plot(state_heatmap(values[gate].detach().numpy(),gate),'lstm_gate_heatmap','Gate activations across units and time')
     st.line_chart(pd.DataFrame({gate:values[gate][:,unit].detach().numpy() for gate in GATES}),alt='Unit gate comparison over time')
 
 
 def _gates():
     st.info('Controlled gate interventions: sliders replace learned functions to isolate retention, writing and exposure. Normal gates depend on x_t and h_previous.')
-    t = st.slider('Memory sequence length',2,80,20,key='lstm_memory_t')
-    f = st.slider('Forget value',0.,1.,.95,.01,key='lstm_memory_f')
-    i = st.slider('Input gate value',0.,1.,.5,.01,key='lstm_memory_i')
-    o = st.slider('Output gate value',0.,1.,.8,.01,key='lstm_memory_o')
-    initial = st.number_input('Initial memory',value=1.,key='lstm_memory_initial')
-    reverse = st.checkbox('Reverse input order',key='lstm_memory_reverse')
+    t = st.slider('Memory sequence length',2,80,20,key='lstm_memory_t', persist_state='session')
+    f = st.slider('Forget value',0.,1.,.95,.01,key='lstm_memory_f', persist_state='session')
+    i = st.slider('Input gate value',0.,1.,.5,.01,key='lstm_memory_i', persist_state='session')
+    o = st.slider('Output gate value',0.,1.,.8,.01,key='lstm_memory_o', persist_state='session')
+    initial = st.number_input('Initial memory',value=1.,key='lstm_memory_initial', persist_state='session')
+    reverse = st.checkbox('Reverse input order',key='lstm_memory_reverse', persist_state='session')
     result = controlled_memory(t,f,i,o,initial,reverse)
     st.caption('Known sequence: +1 first, -0.5 at the middle, zeros elsewhere; g=tanh(x). Reversing changes when writes occur.')
     _plot(state_panels(result),'lstm_memory_panels','Controlled inputs, gates, cell and hidden evolution')
@@ -103,16 +104,16 @@ def _gates():
 
 
 def _architecture():
-    b = st.slider('Batch size',1,8,2,key='lstm_arch_b')
-    t = st.slider('Tensor sequence length',2,20,5,key='lstm_arch_t')
-    i = st.slider('Feature count',1,5,2,key='lstm_arch_i')
-    h = st.slider('Hidden dimensions',1,24,4,key='lstm_arch_h')
-    layers = st.slider('Number of LSTM layers',1,4,2,key='lstm_arch_layers')
-    outputs = st.slider('Head outputs',1,10,2,key='lstm_arch_outputs')
-    first = st.checkbox('batch_first',True,key='lstm_arch_first')
-    selection = st.selectbox('Output selection',['final','sequence'],key='lstm_arch_selection')
-    bias = st.checkbox('Use biases',True,key='lstm_arch_bias')
-    dropout = st.slider('Between-layer dropout',0.,.8,0.,.05,key='lstm_arch_dropout')
+    b = st.slider('Batch size',1,8,2,key='lstm_arch_b', persist_state='session')
+    t = st.slider('Tensor sequence length',2,20,5,key='lstm_arch_t', persist_state='session')
+    i = st.slider('Feature count',1,5,2,key='lstm_arch_i', persist_state='session')
+    h = st.slider('Hidden dimensions',1,24,4,key='lstm_arch_h', persist_state='session')
+    layers = st.slider('Number of LSTM layers',1,4,2,key='lstm_arch_layers', persist_state='session')
+    outputs = st.slider('Head outputs',1,10,2,key='lstm_arch_outputs', persist_state='session')
+    first = st.checkbox('batch_first',True,key='lstm_arch_first', persist_state='session')
+    selection = st.selectbox('Output selection',['final','sequence'],key='lstm_arch_selection', persist_state='session')
+    bias = st.checkbox('Use biases',True,key='lstm_arch_bias', persist_state='session')
+    dropout = st.slider('Between-layer dropout',0.,.8,0.,.05,key='lstm_arch_dropout', persist_state='session')
     try:spec = LSTMModelSpec(input_size=i,hidden_size=h,num_layers=layers,output_size=outputs,batch_first=first,selection=selection,bias=bias,dropout=dropout)
     except ValueError as exc:st.warning(str(exc));return
     x = torch.randn((b,t,i) if first else (t,b,i),generator=torch.Generator().manual_seed(spec.seed))
@@ -127,28 +128,28 @@ def _architecture():
     st.caption('batch_first swaps only input/output batch and time axes. Final states always use [layers,batch,hidden]. Output contains every top-layer step; final selection uses h_n[-1], while c_n stays internal. Traces use eval mode: dropout inactive. Sequence heads predict each position; training uses final-state heads.')
     for row in trace:_tensor(row['tensor'],row['name'])
     for name,p in model.named_parameters():st.caption(f'{name}: {tuple(p.shape)}; {p.numel()} parameters')
-    gate = st.selectbox('Inspect packed gate slice',GATES,key='lstm_arch_gate');index = GATES.index(gate)
+    gate = st.selectbox('Inspect packed gate slice',GATES,key='lstm_arch_gate', persist_state='session');index = GATES.index(gate)
     _tensor(model.rnn.weight_ih_l0[index*h:(index+1)*h],gate+' input matrix')
     _tensor(model.rnn.weight_hh_l0[index*h:(index+1)*h],gate+' recurrent matrix')
     st.download_button('Export LSTM specification',json.dumps(spec.as_dict(),indent=2),file_name='lstm-spec.json',key='lstm_spec_export')
 
 
 def _config(prefix):
-    task = st.selectbox('Sequence task',['memory','forecasting'],key=prefix+'_task')
-    samples = st.slider('Samples',60,1200,240,60,key=prefix+'_samples')
-    length = st.slider('Data sequence length',2,40,12,key=prefix+'_length')
-    distance = st.slider('Dependency distance',1,length-1,min(7,length-1),key=prefix+'_distance') if length>2 else 1
-    noise = st.slider('Noise',0.,.5,.05,.01,key=prefix+'_noise')
-    horizon = st.slider('Forecast horizon',1,10,1,key=prefix+'_horizon')
-    seed = int(st.number_input('Random seed',0,2147483647,42,key=prefix+'_seed'))
-    epochs = st.slider('Epochs',1,40,5,key=prefix+'_epochs')
-    batch = st.selectbox('Batch size',[16,32,64,128],index=1,key=prefix+'_batch')
-    lr = st.number_input('Learning rate',.0001,1.,.01,.001,format='%.4f',key=prefix+'_lr')
-    hidden = st.slider('Training hidden size',2,32,12,key=prefix+'_hidden')
-    layers = st.slider('Training layers',1,4,1,key=prefix+'_layers')
-    dropout = st.slider('Training inter-layer dropout',0.,.8,0.,.05,key=prefix+'_dropout')
-    optimizer = st.selectbox('Optimizer',['Adam','SGD'],key=prefix+'_optimizer')
-    clip = st.number_input('Clip threshold (0 disables)',0.,100.,1.,.1,key=prefix+'_clip')
+    task = st.selectbox('Sequence task',['memory','forecasting'],key=prefix+'_task', persist_state='session')
+    samples = st.slider('Samples',60,1200,240,60,key=prefix+'_samples', persist_state='session')
+    length = st.slider('Data sequence length',2,40,12,key=prefix+'_length', persist_state='session')
+    distance = st.slider('Dependency distance',1,length-1,min(7,length-1),key=prefix+'_distance', persist_state='session') if length>2 else 1
+    noise = st.slider('Noise',0.,.5,.05,.01,key=prefix+'_noise', persist_state='session')
+    horizon = st.slider('Forecast horizon',1,10,1,key=prefix+'_horizon', persist_state='session')
+    seed = int(st.number_input('Random seed',0,2147483647,42,key=prefix+'_seed', persist_state='session'))
+    epochs = st.slider('Epochs',1,40,5,key=prefix+'_epochs', persist_state='session')
+    batch = st.selectbox('Batch size',[16,32,64,128],index=1,key=prefix+'_batch', persist_state='session')
+    lr = st.number_input('Learning rate',.0001,1.,.01,.001,format='%.4f',key=prefix+'_lr', persist_state='session')
+    hidden = st.slider('Training hidden size',2,32,12,key=prefix+'_hidden', persist_state='session')
+    layers = st.slider('Training layers',1,4,1,key=prefix+'_layers', persist_state='session')
+    dropout = st.slider('Training inter-layer dropout',0.,.8,0.,.05,key=prefix+'_dropout', persist_state='session')
+    optimizer = st.selectbox('Optimizer',['Adam','SGD'],key=prefix+'_optimizer', persist_state='session')
+    clip = st.number_input('Clip threshold (0 disables)',0.,100.,1.,.1,key=prefix+'_clip', persist_state='session')
     return LSTMTrainingConfig(task=task,samples=samples,sequence_length=length,dependency_distance=distance,
         noise=noise,horizon=horizon,seed=seed,epochs=epochs,batch_size=batch,learning_rate=lr,
         hidden_size=hidden,num_layers=layers,dropout=dropout,optimizer=optimizer,clip=clip)
@@ -229,12 +230,12 @@ def _training(comparison=False):
 
 
 def _bptt():
-    length = st.slider('BPTT sequence length',2,60,12,key='lstm_bptt_t')
-    bias = st.slider('Forget bias initialization',-6.,6.,2.,.25,key='lstm_bptt_f')
-    scale = st.slider('BPTT weight scale',0.,1.5,.3,.05,key='lstm_bptt_scale')
-    clip = st.number_input('Gradient clipping threshold',.0001,100.,1.,.1,key='lstm_bptt_clip')
-    lr = st.number_input('Update learning rate',.0001,1.,.01,.001,key='lstm_bptt_lr')
-    optimizer = st.selectbox('Update optimizer',['SGD','Adam'],key='lstm_bptt_optimizer')
+    length = st.slider('BPTT sequence length',2,60,12,key='lstm_bptt_t', persist_state='session')
+    bias = st.slider('Forget bias initialization',-6.,6.,2.,.25,key='lstm_bptt_f', persist_state='session')
+    scale = st.slider('BPTT weight scale',0.,1.5,.3,.05,key='lstm_bptt_scale', persist_state='session')
+    clip = st.number_input('Gradient clipping threshold',.0001,100.,1.,.1,key='lstm_bptt_clip', persist_state='session')
+    lr = st.number_input('Update learning rate',.0001,1.,.01,.001,key='lstm_bptt_lr', persist_state='session')
+    optimizer = st.selectbox('Update optimizer',['SGD','Adam'],key='lstm_bptt_optimizer', persist_state='session')
     result = gradient_experiment(length,bias,scale,clip,lr,optimizer)
     st.code('optimizer.zero_grad()\nvalues, steps = cell_trace(x, *parameters)\n# retain_grad() on cell and hidden states\nprediction = steps[-1]["hidden"].sum()\nloss = (prediction - 1).square()\nloss.backward()\nclip_grad_norm_(parameters, threshold)\noptimizer.step()',language='python')
     st.write(f'Regression output: {result["prediction"]:.6f}; target: 1. Loss before: {result["loss"]:.6f}; after update: {result["loss_after"]:.6f}.')
@@ -242,7 +243,7 @@ def _bptt():
     st.dataframe(pd.DataFrame(result['gate_norms']),alt='Per-gate gradient norms for packed weights and biases')
     st.write(f'Gradient norm before: {result["norm_before"]:.6f}; after: {result["norm_after"]:.6f}; threshold: {clip}.')
     _plot(state_panels({**result['values'],'input_vector':demo_cell(1,2,length,scale=scale)[0]}),'lstm_bptt_states','Forward gates and state updates')
-    selected = st.selectbox('Parameter tensor',range(4),format_func=lambda k:('W_ih','W_hh','b_ih','b_hh')[k],key='lstm_bptt_parameter')
+    selected = st.selectbox('Parameter tensor',range(4),format_func=lambda k:('W_ih','W_hh','b_ih','b_hh')[k],key='lstm_bptt_parameter', persist_state='session')
     for name,value in [('Before',result['before'][selected]),('Raw gradient',result['raw_gradients'][selected]),('Clipped gradient',result['clipped_gradients'][selected]),('After',result['after'][selected])]:_tensor(value,name)
     if optimizer=='SGD':
         st.latex(r'\theta_{new}=\theta_{old}-\eta\,g_{clipped}')
@@ -255,8 +256,8 @@ def _bptt():
 
 
 def _variable():
-    raw = st.text_input('Valid lengths (comma-separated)','5,2,4',key='lstm_lengths')
-    h = st.slider('Packed hidden size',1,12,3,key='lstm_packed_h')
+    raw = st.text_input('Valid lengths (comma-separated)','5,2,4',key='lstm_lengths', persist_state='session')
+    h = st.slider('Packed hidden size',1,12,3,key='lstm_packed_h', persist_state='session')
     try:result = variable_length_demo(tuple(int(v.strip()) for v in raw.split(',')),h)
     except (ValueError,RuntimeError) as exc:st.warning(str(exc));return
     st.code('packed = pack_padded_sequence(x, lengths.cpu(), batch_first=True, enforce_sorted=False)\npacked_output, (h_n, c_n) = lstm(packed)\noutput, lengths = pad_packed_sequence(packed_output, batch_first=True)\nfinal_valid_hidden = h_n[-1]\n# masks exclude padded targets from supervised loss',language='python')
@@ -266,7 +267,7 @@ def _variable():
 
 def _progress():
     progress = st.session_state.learning_progress_v1
-    answers = [st.radio(q,options,index=None,key=f'lstm_quiz_{i}') for i,(q,options,_,_) in enumerate(QUESTIONS)]
+    answers = [st.radio(q,options,index=None,key=f'lstm_quiz_{i}', persist_state='session') for i,(q,options,_,_) in enumerate(QUESTIONS)]
     if st.button('Grade LSTM quiz',key='lstm_grade'):
         if any(a is None for a in answers):st.warning('Answer every question first.')
         else:
@@ -275,7 +276,7 @@ def _progress():
             st.success(f'{score}/{len(QUESTIONS)} correct')
             for question,_,_,explanation in QUESTIONS:st.caption(question+' — '+explanation)
     for task,expected in EXPERIMENTS:st.write(task);st.caption('Expected: '+expected)
-    notes = st.text_area('LSTM experiment notes',value=progress.get('exercise_notes',{}).get('lstm',''),key='lstm_notes')
+    notes = st.text_area('LSTM experiment notes',value=progress.get('exercise_notes',{}).get('lstm',''),key='lstm_notes', persist_state='session')
     if st.button('Save LSTM notes',key='lstm_save_notes'):
         current = st.session_state.learning_progress_v1
         st.session_state.learning_progress_v1 = {**current,'exercise_notes':{**current.get('exercise_notes',{}),'lstm':notes}}
@@ -292,6 +293,9 @@ def _progress():
 def render_lstm_learning_studio():
     st.subheader('Long Short-Term Memory (LSTM)')
     st.caption('Learn gated memory through PyTorch calculations, training and measured comparisons.')
-    section = st.selectbox('LSTM section',SECTIONS,key='lstm_section')
-    renderers = [_concepts,_cell,_gates,_architecture,_training,lambda:_training(True),_bptt,_variable,_progress]
-    renderers[SECTIONS.index(section)]()
+    for section, tab in render_learning_section_navigation(SECTIONS, 'lstm').items():
+        if not tab.open:
+            continue
+        with tab:
+            renderers = [_concepts,_cell,_gates,_architecture,_training,lambda:_training(True),_bptt,_variable,_progress]
+            renderers[SECTIONS.index(section)]()

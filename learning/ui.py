@@ -1,6 +1,7 @@
 """Streamlit presentation layer only; computation and content live in separate modules."""
 import json
 import streamlit as st
+from .navigation import render_learning_section_navigation
 from .spec import ModelSpec
 from .pytorch_adapter import get_adapter
 from .content import LESSONS, EXERCISES
@@ -58,7 +59,7 @@ def render_learning_studio():
     spec = ModelSpec.for_lesson(lesson, inputs, (width,) * hidden_count, outputs, activation, bias, seed)
     adapter = get_adapter(spec.framework)
     st.metric('Trainable parameters', adapter.parameter_count(spec))
-    tabs = st.tabs(['Concepts & math', 'Architecture & tensors', 'Forward propagation', 'Backward & SGD', 'Quiz', 'Exercises & progress'])
+    tabs = list(render_learning_section_navigation(['Concepts & math', 'Architecture & tensors', 'Forward propagation', 'Backward & SGD', 'Quiz', 'Exercises & progress'], 'learn', lazy=False).values())
     with tabs[0]:
         st.latex(r'z = xW^T+b,\quad a=f(z)')
         st.latex(r'L=\frac{1}{N}\sum_i(\hat y_i-y_i)^2')

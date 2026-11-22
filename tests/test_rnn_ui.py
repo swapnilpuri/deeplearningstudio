@@ -12,7 +12,8 @@ def start(section):
     app = AppTest.from_file(str(APP),default_timeout=30).run()
     app.radio(key='workspace').set_value('Learning Studio').run()
     app.selectbox(key='learn_lesson').set_value('rnn').run()
-    app.selectbox(key='rnn_section').set_value(section).run()
+    app.session_state['rnn_section'] = section
+    app.run()
     assert not app.exception
     return app
 
@@ -82,9 +83,11 @@ def test_time_first_stacked_sequence_head_and_truncation():
     app.selectbox(key='rnn_arch_selection').set_value('sequence')
     app.slider(key='rnn_arch_layers').set_value(3).run()
     assert not app.exception
-    app.selectbox(key='rnn_section').set_value('BPTT & clipping').run()
+    app.session_state['rnn_section'] = 'BPTT & clipping'
+    app.run()
     app.slider(key='rnn_bptt_chunk').set_value(4).run()
     assert not app.exception and app.warning
-    app.selectbox(key='rnn_section').set_value('Variable lengths').run()
+    app.session_state['rnn_section'] = 'Variable lengths'
+    app.run()
     app.text_input(key='rnn_lengths').set_value('0,2').run()
     assert not app.exception and app.warning

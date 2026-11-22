@@ -4,6 +4,7 @@ import math
 import pandas as pd
 import torch
 import streamlit as st
+from .navigation import render_learning_section_navigation
 from .attention_spec import AttentionSpec
 from .attention_adapter import projections, visibility, self_attention
 from .attention_training import AttentionTrainingConfig, train_attention
@@ -135,54 +136,57 @@ def _exercises():
 
 def render_attention_learning_studio():
     st.subheader('Single-Head Self-Attention Learning Studio')
-    section = st.selectbox('Attention section',SECTIONS,key='att_section')
-    index = SECTIONS.index(section)
-    st.write(EXPLANATIONS[index])
-    try:
-        if index == 7: _training();return
-        if index == 8: _exercises();return
-        trace, weights, labels = _inputs()
-        query = st.selectbox('Inspect query token',range(len(labels)),format_func=lambda i:labels[i],key='att_query')
-        key = st.selectbox('Inspect key token',range(len(labels)),format_func=lambda i:labels[i],key='att_key')
-        if index == 2:
-            event = st.dataframe(pd.DataFrame(trace['scores'].numpy(), index=labels, columns=labels),
-                key='att_score_cells_'+str(len(labels)), on_select='rerun', selection_mode='single-cell', alt='Select a query-key score cell to inspect its dot product')
-            cells = event.selection.cells
-            if cells:
-                query, column = cells[0]
-                key = labels.index(column)
-                st.caption(f'Selected cell: query {labels[query]}, key {labels[key]}')
-        _tensor(trace['X'],'Input X',labels)
-        if index in (0,1):
-            for name,w in weights.items(): _tensor(w,name)
-            for name in ('Q','K','V'): _tensor(trace[name],name,labels)
-        if index in (2,3):
-            _tensor(trace['Q'],'Q',labels);_tensor(trace['K'].T,'K transpose')
-            for name in ('scores','scaled_scores'): _tensor(trace[name],name,labels)
-            products = trace['Q'][query] * trace['K'][key]
-            st.write('Selected dot product: '+' + '.join(f'{a:.5f}×{b:.5f}' for a,b in zip(trace['Q'][query],trace['K'][key]))+f' = {products.sum():.6f}')
-            st.write('Scaling divisor sqrt(dk):',math.sqrt(trace['Q'].shape[1]))
-            _tensor(torch.softmax(trace['scores'],-1),'Unscaled softmax',labels)
-            _tensor(torch.softmax(trace['scaled_scores'],-1),'Scaled softmax before mask',labels)
-        if index == 4:
-            _tensor(trace['visibility'].float(),'Visibility: 1 permits, 0 blocks',labels)
-            _tensor(trace['masked_logits'],'Masked logits (forbidden = -infinity)',labels)
-            _plot(attention_figure(trace['visibility'].float(),labels,'Visibility mask'),'att_mask_plot','Mask visibility')
-        _tensor(trace['probabilities'],'Attention probabilities',labels)
-        _plot(attention_figure(trace['probabilities'],labels,'Attention probabilities'),'att_prob_plot','Query-to-key attention probabilities')
-        st.caption('Inspect any score cell using the query/key selectors; hover the heatmap for exact probabilities.')
-        st.write('Row sums:',trace['probabilities'].sum(-1).tolist())
-        st.write('Forbidden probability mass:',float(trace['probabilities'][~trace['visibility']].sum()))
-        _plot(distribution_figure(trace['probabilities'],labels,query),'att_dist','Selected query routing coefficients')
-        if index == 6:
-            for name in ('scores','scaled_scores'):
-                _plot(attention_figure(trace[name],labels,name),'att_heat_'+name,name)
-        if index in (0,5,6):
-            _tensor(trace['V'],'Value vectors',labels)
-            _tensor(trace['probabilities'][query,:,None]*trace['V'],'Selected-query weighted value contributions',labels)
-            _tensor(trace['output'],'Contextual output Z',labels)
-            st.caption('Sum the weighted-contribution rows to recover the selected output row. Input and output widths can differ.')
-        operations = dict(X='Embedding lookup / custom input',Q='X @ Wq',K='X @ Wk',V='X @ Wv',scores='Q @ K.T',scaled_scores='scores / sqrt(dk)',masked_logits='Selected logits + additive mask',probabilities='softmax(masked logits, key axis)',output='A @ V')
-        st.dataframe(pd.DataFrame([dict(stage=name,shape=str(list(trace[name].shape)),dtype=str(trace[name].dtype),operation=op,sample=str(trace[name].flatten()[:4].tolist())) for name,op in operations.items()]),alt='Stage-by-stage tensor computation inspector')
-    except (ValueError,TypeError,KeyError,IndexError,RuntimeError) as exc:
-        st.warning(f'Check attention inputs: {exc}')
+    for section, tab in render_learning_section_navigation(SECTIONS, 'att').items():
+        if not tab.open:
+            continue
+        with tab:
+            index = SECTIONS.index(section)
+            st.write(EXPLANATIONS[index])
+            try:
+                if index == 7: _training();return
+                if index == 8: _exercises();return
+                trace, weights, labels = _inputs()
+                query = st.selectbox('Inspect query token',range(len(labels)),format_func=lambda i:labels[i],key='att_query', persist_state='session')
+                key = st.selectbox('Inspect key token',range(len(labels)),format_func=lambda i:labels[i],key='att_key', persist_state='session')
+                if index == 2:
+                    event = st.dataframe(pd.DataFrame(trace['scores'].numpy(), index=labels, columns=labels),
+                        key='att_score_cells_'+str(len(labels)), on_select='rerun', selection_mode='single-cell', alt='Select a query-key score cell to inspect its dot product')
+                    cells = event.selection.cells
+                    if cells:
+                        query, column = cells[0]
+                        key = labels.index(column)
+                        st.caption(f'Selected cell: query {labels[query]}, key {labels[key]}')
+                _tensor(trace['X'],'Input X',labels)
+                if index in (0,1):
+                    for name,w in weights.items(): _tensor(w,name)
+                    for name in ('Q','K','V'): _tensor(trace[name],name,labels)
+                if index in (2,3):
+                    _tensor(trace['Q'],'Q',labels);_tensor(trace['K'].T,'K transpose')
+                    for name in ('scores','scaled_scores'): _tensor(trace[name],name,labels)
+                    products = trace['Q'][query] * trace['K'][key]
+                    st.write('Selected dot product: '+' + '.join(f'{a:.5f}×{b:.5f}' for a,b in zip(trace['Q'][query],trace['K'][key]))+f' = {products.sum():.6f}')
+                    st.write('Scaling divisor sqrt(dk):',math.sqrt(trace['Q'].shape[1]))
+                    _tensor(torch.softmax(trace['scores'],-1),'Unscaled softmax',labels)
+                    _tensor(torch.softmax(trace['scaled_scores'],-1),'Scaled softmax before mask',labels)
+                if index == 4:
+                    _tensor(trace['visibility'].float(),'Visibility: 1 permits, 0 blocks',labels)
+                    _tensor(trace['masked_logits'],'Masked logits (forbidden = -infinity)',labels)
+                    _plot(attention_figure(trace['visibility'].float(),labels,'Visibility mask'),'att_mask_plot','Mask visibility')
+                _tensor(trace['probabilities'],'Attention probabilities',labels)
+                _plot(attention_figure(trace['probabilities'],labels,'Attention probabilities'),'att_prob_plot','Query-to-key attention probabilities')
+                st.caption('Inspect any score cell using the query/key selectors; hover the heatmap for exact probabilities.')
+                st.write('Row sums:',trace['probabilities'].sum(-1).tolist())
+                st.write('Forbidden probability mass:',float(trace['probabilities'][~trace['visibility']].sum()))
+                _plot(distribution_figure(trace['probabilities'],labels,query),'att_dist','Selected query routing coefficients')
+                if index == 6:
+                    for name in ('scores','scaled_scores'):
+                        _plot(attention_figure(trace[name],labels,name),'att_heat_'+name,name)
+                if index in (0,5,6):
+                    _tensor(trace['V'],'Value vectors',labels)
+                    _tensor(trace['probabilities'][query,:,None]*trace['V'],'Selected-query weighted value contributions',labels)
+                    _tensor(trace['output'],'Contextual output Z',labels)
+                    st.caption('Sum the weighted-contribution rows to recover the selected output row. Input and output widths can differ.')
+                operations = dict(X='Embedding lookup / custom input',Q='X @ Wq',K='X @ Wk',V='X @ Wv',scores='Q @ K.T',scaled_scores='scores / sqrt(dk)',masked_logits='Selected logits + additive mask',probabilities='softmax(masked logits, key axis)',output='A @ V')
+                st.dataframe(pd.DataFrame([dict(stage=name,shape=str(list(trace[name].shape)),dtype=str(trace[name].dtype),operation=op,sample=str(trace[name].flatten()[:4].tolist())) for name,op in operations.items()]),alt='Stage-by-stage tensor computation inspector')
+            except (ValueError,TypeError,KeyError,IndexError,RuntimeError) as exc:
+                st.warning(f'Check attention inputs: {exc}')

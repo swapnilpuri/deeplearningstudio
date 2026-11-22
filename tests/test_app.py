@@ -23,20 +23,23 @@ def test_all_workspaces_render(workspace):
 @pytest.mark.parametrize('section',['Concepts & mathematics','Convolution explorer','Pooling explorer','CNN architecture','Backpropagation','Training laboratory','Quiz & progress'])
 def test_cnn_sections_render(section):
     app = start()
-    app.selectbox(key='cnn_section').set_value(section).run()
+    app.session_state['cnn_section'] = section
+    app.run()
     assert not app.exception
 
 
 def test_one_cell_convolution_and_pooling_render():
     app = start()
-    app.selectbox(key='cnn_section').set_value('Convolution explorer').run()
+    app.session_state['cnn_section'] = 'Convolution explorer'
+    app.run()
     app.slider(key='cnn_img_height').set_value(4)
     app.slider(key='cnn_img_width').set_value(4)
     app.slider(key='cnn_kernel').set_value(4)
     app.slider(key='cnn_kernel_width').set_value(4)
     app.slider(key='cnn_padding').set_value(0).run()
     assert not app.exception and not app.warning
-    app.selectbox(key='cnn_section').set_value('Pooling explorer').run()
+    app.session_state['cnn_section'] = 'Pooling explorer'
+    app.run()
     app.slider(key='cnn_pool_size').set_value(4)
     app.slider(key='cnn_pool_k').set_value(4).run()
     assert not app.exception and not app.warning
@@ -44,7 +47,8 @@ def test_one_cell_convolution_and_pooling_render():
 
 def test_cnn_training_final_evaluation_and_config_reset():
     app = start()
-    app.selectbox(key='cnn_section').set_value('Training laboratory').run()
+    app.session_state['cnn_section'] = 'Training laboratory'
+    app.run()
     app.slider(key='cnn_epochs').set_value(1)
     app.slider(key='cnn_train_f1').set_value(2)
     app.slider(key='cnn_train_f2').set_value(2)

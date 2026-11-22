@@ -3,6 +3,7 @@ import json
 import numpy as np
 import pandas as pd
 import streamlit as st
+from .navigation import render_learning_section_navigation
 import torch
 from .embedding_spec import EmbeddingModelSpec
 from .embedding_adapter import (TOY_CORPUS, tokenize, build_vocabulary, encode, embedding_table,
@@ -39,7 +40,7 @@ def _seed(prefix):
 
 
 def _concepts():
-    index = st.selectbox('Embedding concept', range(len(TOPICS)), format_func=lambda i:TOPICS[i][0], key='emb_topic')
+    index = st.selectbox('Embedding concept', range(len(TOPICS)), format_func=lambda i:TOPICS[i][0], key='emb_topic', persist_state='session')
     title, intuition, formula, shapes, example, application, explorer = TOPICS[index]
     st.subheader(title); st.write(intuition); st.latex(formula)
     st.code(shapes); st.info('Worked example: '+example)
@@ -56,12 +57,12 @@ def _concepts():
 
 
 def _tokenization():
-    text = st.text_area('Raw text', 'cat dog mystery', key='emb_text', max_chars=2000)
-    mode = st.selectbox('Tokenizer', ['word','character'], key='emb_tokenizer')
-    source = st.selectbox('Vocabulary source', ['Toy corpus','Custom corpus'], key='emb_vocab_source')
-    corpus_text = st.text_area('Corpus (one sentence per line)', 'cat dog pet\ndog puppy pet\napple orange fruit',key='emb_corpus',max_chars=20000) if source == 'Custom corpus' else '\n'.join(TOY_CORPUS)
-    length = st.slider('Padded / truncated length', 1, 50, 8, key='emb_pad_length')
-    dim = st.slider('Token embedding width', 1, 12, 3, key='emb_token_dim')
+    text = st.text_area('Raw text', 'cat dog mystery', key='emb_text', max_chars=2000, persist_state='session')
+    mode = st.selectbox('Tokenizer', ['word','character'], key='emb_tokenizer', persist_state='session')
+    source = st.selectbox('Vocabulary source', ['Toy corpus','Custom corpus'], key='emb_vocab_source', persist_state='session')
+    corpus_text = st.text_area('Corpus (one sentence per line)', 'cat dog pet\ndog puppy pet\napple orange fruit',key='emb_corpus',max_chars=20000, persist_state='session') if source == 'Custom corpus' else '\n'.join(TOY_CORPUS)
+    length = st.slider('Padded / truncated length', 1, 50, 8, key='emb_pad_length', persist_state='session')
+    dim = st.slider('Token embedding width', 1, 12, 3, key='emb_token_dim', persist_state='session')
     vocab, counts = build_vocabulary(corpus_text.splitlines(), mode)
     if len(vocab) > 500: st.warning('Use a corpus with at most 500 vocabulary entries.'); return
     tokens = tokenize(text, mode)
@@ -82,17 +83,17 @@ def _tokenization():
 
 
 def _matrix():
-    v = st.slider('Vocabulary size', 2, 30, 8, key='emb_matrix_v')
-    d = st.slider('Embedding dimension', 1, 16, 3, key='emb_matrix_d')
+    v = st.slider('Vocabulary size', 2, 30, 8, key='emb_matrix_v', persist_state='session')
+    d = st.slider('Embedding dimension', 1, 16, 3, key='emb_matrix_d', persist_state='session')
     seed = _seed('emb_matrix')
-    init = st.selectbox('Weight initialization', ['normal','uniform','zeros'], key='emb_init')
-    padding = st.selectbox('Padding index', [None,*range(v)], index=1, key=f'emb_padding_{v}')
+    init = st.selectbox('Weight initialization', ['normal','uniform','zeros'], key='emb_init', persist_state='session')
+    padding = st.selectbox('Padding index', [None,*range(v)], index=1, key=f'emb_padding_{v}', persist_state='session')
     values = None
-    if st.checkbox('Custom embedding values (JSON)',key='emb_custom'):
-        values = json.loads(st.text_area('Embedding matrix JSON',json.dumps(embedding_table(v,d,seed,init,padding).weight.detach().tolist()),key=f'emb_values_{v}_{d}'))
+    if st.checkbox('Custom embedding values (JSON)',key='emb_custom', persist_state='session'):
+        values = json.loads(st.text_area('Embedding matrix JSON',json.dumps(embedding_table(v,d,seed,init,padding).weight.detach().tolist()),key=f'emb_values_{v}_{d}', persist_state='session'))
     table = embedding_table(v,d,seed,init,padding,values)
-    token = st.selectbox('Selected token ID', range(v), key=f'emb_selected_{v}')
-    raw = st.text_input('Sequence IDs (comma-separated)', f'{token},{token},{(token+1)%v}',key=f'emb_ids_{v}_{token}')
+    token = st.selectbox('Selected token ID', range(v), key=f'emb_selected_{v}', persist_state='session')
+    raw = st.text_input('Sequence IDs (comma-separated)', f'{token},{token},{(token+1)%v}',key=f'emb_ids_{v}_{token}', persist_state='session')
     ids = torch.tensor([[int(part.strip()) for part in raw.split(',')]])
     r = lookup_demo(table, ids)
     st.latex(r'e=xE=E[\mathrm{id},:],\quad E:[V,D],\quad X:[B,T]\to[B,T,D]')
@@ -108,8 +109,8 @@ def _matrix():
 
 
 def _gradients():
-    optimizer = st.selectbox('Update optimizer',['SGD','Adam'],key='emb_grad_optimizer')
-    lr = st.number_input('Update learning rate',.0001,1.,.1,.01,key='emb_grad_lr')
+    optimizer = st.selectbox('Update optimizer',['SGD','Adam'],key='emb_grad_optimizer', persist_state='session')
+    lr = st.number_input('Update learning rate',.0001,1.,.1,.01,key='emb_grad_lr', persist_state='session')
     result = gradient_experiment(optimizer,lr,_seed('emb_grad'))
     st.code('optimizer.zero_grad()\nvectors = model.embedding(ids)\nlogits = model(ids)\nloss = torch.nn.functional.cross_entropy(logits, target)\nloss.backward()\noptimizer.step()',language='python')
     for key in ('ids','vectors','prediction','target','before','gradient','occurrence_gradients','after'):_tensor(result[key],key)
@@ -124,7 +125,7 @@ def _gradients():
 def _available_vectors(prefix):
     available = ['Random toy table']
     if 'emb_word_run' in st.session_state: available.append('Trained skip-gram')
-    source = st.selectbox('Vector source', available, key=prefix+'_source')
+    source = st.selectbox('Vector source', available, key=prefix+'_source', persist_state='session')
     if source == 'Trained skip-gram':
         run = st.session_state.emb_word_run
         return run['vocabulary'], run['trained'].numpy(), 'Trained toy co-occurrence vectors; semantic quality is not established.'
@@ -137,12 +138,12 @@ def _similarity():
     vocab, vectors, message = _available_vectors('emb_sim')
     st.info(message)
     labels = list(vocab)
-    a = st.selectbox('Vector A token',labels,index=2,key='emb_sim_a')
-    b = st.selectbox('Vector B token',labels,index=3,key='emb_sim_b')
-    raw_a = st.text_input('Edit vector A as JSON',json.dumps(vectors[vocab[a]].tolist()),key=f'emb_a_{a}_{vectors.shape[1]}_{message}')
-    raw_b = st.text_input('Edit vector B as JSON',json.dumps(vectors[vocab[b]].tolist()),key=f'emb_b_{b}_{vectors.shape[1]}_{message}')
+    a = st.selectbox('Vector A token',labels,index=2,key='emb_sim_a', persist_state='session')
+    b = st.selectbox('Vector B token',labels,index=3,key='emb_sim_b', persist_state='session')
+    raw_a = st.text_input('Edit vector A as JSON',json.dumps(vectors[vocab[a]].tolist()),key=f'emb_a_{a}_{vectors.shape[1]}_{message}', persist_state='session')
+    raw_b = st.text_input('Edit vector B as JSON',json.dumps(vectors[vocab[b]].tolist()),key=f'emb_b_{b}_{vectors.shape[1]}_{message}', persist_state='session')
     va,vb = np.asarray(json.loads(raw_a),dtype=float),np.asarray(json.loads(raw_b),dtype=float)
-    if st.checkbox('Normalize comparison vectors',key='emb_sim_normalize'): va,vb = normalize_vectors(va),normalize_vectors(vb)
+    if st.checkbox('Normalize comparison vectors',key='emb_sim_normalize', persist_state='session'): va,vb = normalize_vectors(va),normalize_vectors(vb)
     results = similarity(va,vb)
     st.write('Vector norms:', float(np.linalg.norm(va)),float(np.linalg.norm(vb))); st.json(results)
     st.latex(r'a^Tb=\sum_i a_ib_i,\quad \cos(a,b)=\frac{a^Tb}{\|a\|\|b\|}')
@@ -151,10 +152,10 @@ def _similarity():
     st.caption('Cosine at zero is undefined mathematically; this lab uses 0 as an explicit safe convention. Smaller distance means closer; larger similarity means a better match under the chosen model and normalization assumptions.')
     st.subheader('Exact nearest-neighbor retrieval')
     st.graphviz_chart('digraph {rankdir=LR; "Query vector" -> "Compatible embeddings" -> "Similarity scores" -> "Ranked neighbors";}')
-    query = st.selectbox('Query token',labels[2:],key='emb_query')
-    metric = st.selectbox('Retrieval metric',['cosine','dot'],key='emb_metric')
-    normalize = st.checkbox('Normalize retrieval vectors',key='emb_retrieval_normalize')
-    k = st.slider('Top K',1,min(15,len(vocab)-3),5,key='emb_topk')
+    query = st.selectbox('Query token',labels[2:],key='emb_query', persist_state='session')
+    metric = st.selectbox('Retrieval metric',['cosine','dot'],key='emb_metric', persist_state='session')
+    normalize = st.checkbox('Normalize retrieval vectors',key='emb_retrieval_normalize', persist_state='session')
+    k = st.slider('Top K',1,min(15,len(vocab)-3),5,key='emb_topk', persist_state='session')
     ranking = nearest_neighbors(vectors[vocab[query]],vectors,k,metric,normalize,exclude=(0,1,vocab[query]))
     rows = [dict(token=labels[i],ID=i,score=score) for i,score in ranking]
     st.dataframe(pd.DataFrame(rows),alt='Exact nearest neighbors in original embedding space')
@@ -185,13 +186,13 @@ def _invalidate(prefix, signature):
 def _spaces(run):
     labels = list(run['vocabulary'])[2:]
     initial,trained = run['initial'].numpy()[2:],run['trained'].numpy()[2:]
-    selected = st.selectbox('Inspect word',labels,key='emb_space_token')
+    selected = st.selectbox('Inspect word',labels,key='emb_space_token', persist_state='session')
     index = labels.index(selected)
-    axes = st.selectbox('Projection dimensions',[2,3] if trained.shape[1]>=3 else [2],key='emb_space_axes')
+    axes = st.selectbox('Projection dimensions',[2,3] if trained.shape[1]>=3 else [2],key='emb_space_axes', persist_state='session')
     methods = ['PCA','t-SNE']
     if trained.shape[1] == axes: methods.insert(0,'Direct')
-    method = st.selectbox('Projection method',methods,key='emb_projection')
-    perplexity = st.slider('t-SNE perplexity',1,max(1,len(labels)-1),min(5,len(labels)-1),key='emb_perplexity') if method=='t-SNE' else 5
+    method = st.selectbox('Projection method',methods,key='emb_projection', persist_state='session')
+    perplexity = st.slider('t-SNE perplexity',1,max(1,len(labels)-1),min(5,len(labels)-1),key='emb_perplexity', persist_state='session') if method=='t-SNE' else 5
     initial_ranking = nearest_neighbors(initial[index],initial,5,exclude=(index,))
     trained_ranking = nearest_neighbors(trained[index],trained,5,exclude=(index,))
     st.dataframe(pd.DataFrame([dict(stage=stage,token=labels[i],cosine=score) for stage,ranked in [('Initial',initial_ranking),('Trained',trained_ranking)] for i,score in ranked]),alt='Initial and trained nearest-neighbor comparison')
@@ -228,10 +229,10 @@ def _word_training():
 
 def _sentence():
     vocab,vectors,message = _available_vectors('emb_sentence'); st.info(message)
-    first = st.text_input('Sentence A','cat dog pet',key='emb_sentence_a')
-    second = st.text_input('Sentence B','pet dog cat',key='emb_sentence_b')
-    mode = st.selectbox('Pooling operation',['mean','sum','max'],key='emb_pooling')
-    length = st.slider('Sentence padded length',1,20,8,key='emb_sentence_length')
+    first = st.text_input('Sentence A','cat dog pet',key='emb_sentence_a', persist_state='session')
+    second = st.text_input('Sentence B','pet dog cat',key='emb_sentence_b', persist_state='session')
+    mode = st.selectbox('Pooling operation',['mean','sum','max'],key='emb_pooling', persist_state='session')
+    length = st.slider('Sentence padded length',1,20,8,key='emb_sentence_length', persist_state='session')
     table = torch.tensor(vectors,dtype=torch.float32)
     pooled = []
     for name,text in [('A',first),('B',second)]:
@@ -248,11 +249,11 @@ def _sentence():
 
 def _positions():
     vocab,_ = build_vocabulary(['the weather is cool.','that movie is cool.'])
-    text = st.text_input('Positional sentence','the weather is cool.',key='emb_pos_sentence')
-    reverse = st.checkbox('Reverse token order',key='emb_reverse')
-    length = st.slider('Position sequence length',1,16,6,key='emb_pos_length')
-    dim = st.slider('Position embedding dimension',1,16,5,key='emb_pos_dim')
-    positional = st.selectbox('Position representation',['learned','sinusoidal'],key='emb_pos_type')
+    text = st.text_input('Positional sentence','the weather is cool.',key='emb_pos_sentence', persist_state='session')
+    reverse = st.checkbox('Reverse token order',key='emb_reverse', persist_state='session')
+    length = st.slider('Position sequence length',1,16,6,key='emb_pos_length', persist_state='session')
+    dim = st.slider('Position embedding dimension',1,16,5,key='emb_pos_dim', persist_state='session')
+    positional = st.selectbox('Position representation',['learned','sinusoidal'],key='emb_pos_type', persist_state='session')
     seed = _seed('emb_pos')
     tokens = tokenize(text)
     if reverse:tokens = tokens[::-1]
@@ -266,12 +267,12 @@ def _positions():
     for name in ('token','position','combined'):
         _tensor(r[name][0],name+' vectors')
         _plot(matrix_figure(r[name][0].detach().numpy(),name+' representations'),'emb_pos_'+name,name+' positional heatmap')
-    left = st.selectbox('Compare position A',range(length),key=f'emb_position_a_{length}')
-    right = st.selectbox('Compare position B',range(length),index=min(1,length-1),key=f'emb_position_b_{length}')
+    left = st.selectbox('Compare position A',range(length),key=f'emb_position_a_{length}', persist_state='session')
+    right = st.selectbox('Compare position B',range(length),index=min(1,length-1),key=f'emb_position_b_{length}', persist_state='session')
     st.json(similarity(r['position'][0,left].detach().numpy(),r['position'][0,right].detach().numpy()))
     st.subheader('Static versus contextual: cool')
     for sentence in ('the weather is cool.','that movie is cool.'):
-        selected = st.text_input('Context sentence '+str(len(sentence)),sentence,key='emb_static_'+str(len(sentence)))
+        selected = st.text_input('Context sentence '+str(len(sentence)),sentence,key='emb_static_'+str(len(sentence)), persist_state='session')
         token_ids = encode(tokenize(selected),vocab)
         st.write('Tokens:',tokenize(selected))
         if vocab['cool.'] in token_ids.tolist(): _tensor(model.embedding(torch.tensor([vocab['cool.']])),'Static cool vector in '+selected)
@@ -280,15 +281,15 @@ def _positions():
 
 
 def _architecture():
-    v = st.slider('Architecture vocabulary size',2,40,12,key='emb_arch_v')
-    dim = st.slider('Architecture embedding dimension',1,16,4,key='emb_arch_d')
-    classes = st.slider('Output classes',2,8,2,key='emb_arch_c')
-    batch = st.slider('Batch size B',1,4,2,key='emb_arch_b')
-    length = st.slider('Sequence length T',1,12,5,key='emb_arch_t')
-    maximum = st.slider('Maximum positional length',1,20,12,key='emb_arch_max')
-    padding = st.selectbox('Architecture padding index',[None,*range(v)],index=1,key=f'emb_arch_pad_{v}')
-    pooling = st.selectbox('Architecture pooling',['mean','sum','max'],key='emb_arch_pool')
-    positional = st.selectbox('Architecture position mode',['none','learned','sinusoidal'],key='emb_arch_pos')
+    v = st.slider('Architecture vocabulary size',2,40,12,key='emb_arch_v', persist_state='session')
+    dim = st.slider('Architecture embedding dimension',1,16,4,key='emb_arch_d', persist_state='session')
+    classes = st.slider('Output classes',2,8,2,key='emb_arch_c', persist_state='session')
+    batch = st.slider('Batch size B',1,4,2,key='emb_arch_b', persist_state='session')
+    length = st.slider('Sequence length T',1,12,5,key='emb_arch_t', persist_state='session')
+    maximum = st.slider('Maximum positional length',1,20,12,key='emb_arch_max', persist_state='session')
+    padding = st.selectbox('Architecture padding index',[None,*range(v)],index=1,key=f'emb_arch_pad_{v}', persist_state='session')
+    pooling = st.selectbox('Architecture pooling',['mean','sum','max'],key='emb_arch_pool', persist_state='session')
+    positional = st.selectbox('Architecture position mode',['none','learned','sinusoidal'],key='emb_arch_pos', persist_state='session')
     spec = EmbeddingModelSpec(v,dim,classes,padding,pooling,positional,maximum,_seed('emb_arch'))
     rows = spec.infer_shapes(batch,length)
     st.graphviz_chart(architecture_graph(rows))
@@ -352,7 +353,7 @@ def _evaluation():
 
 def _progress():
     progress = st.session_state.learning_progress_v1
-    answers = [st.radio(question,options,index=None,key=f'emb_quiz_{i}') for i,(question,options,_,_) in enumerate(QUESTIONS)]
+    answers = [st.radio(question,options,index=None,key=f'emb_quiz_{i}', persist_state='session') for i,(question,options,_,_) in enumerate(QUESTIONS)]
     if st.button('Grade embedding quiz',key='emb_grade'):
         if any(answer is None for answer in answers):st.warning('Answer every question first.')
         else:
@@ -360,7 +361,7 @@ def _progress():
             st.session_state.learning_progress_v1 = record_quiz(progress,'embedding',score,len(QUESTIONS))
             st.success(f'{score}/{len(QUESTIONS)} correct')
             for question,_,_,explanation in QUESTIONS:st.caption(question+' — '+explanation)
-    notes = st.text_area('Embedding experiment notes',value=progress.get('exercise_notes',{}).get('embedding',''),key='emb_notes')
+    notes = st.text_area('Embedding experiment notes',value=progress.get('exercise_notes',{}).get('embedding',''),key='emb_notes', persist_state='session')
     if st.button('Save embedding notes',key='emb_save_notes'):
         current = st.session_state.learning_progress_v1
         st.session_state.learning_progress_v1 = {**current,'exercise_notes':{**current.get('exercise_notes',{}),'embedding':notes}}
@@ -376,8 +377,11 @@ def _progress():
 def render_embedding_learning_studio():
     st.subheader('Embedding Network')
     st.caption('Discrete tokens → real learned vectors → similarity, retrieval and classification.')
-    section = st.selectbox('Embedding section',SECTIONS,key='emb_section')
-    renderers = [_concepts,_tokenization,_matrix,_gradients,_similarity,_word_training,_sentence,_positions,_architecture,_classification,_evaluation,_progress]
-    try:renderers[SECTIONS.index(section)]()
-    except (ValueError,TypeError,KeyError,IndexError,RuntimeError) as exc:
-        st.warning(f'Check the experiment inputs: {exc}')
+    for section, tab in render_learning_section_navigation(SECTIONS, 'emb').items():
+        if not tab.open:
+            continue
+        with tab:
+            renderers = [_concepts,_tokenization,_matrix,_gradients,_similarity,_word_training,_sentence,_positions,_architecture,_classification,_evaluation,_progress]
+            try:renderers[SECTIONS.index(section)]()
+            except (ValueError,TypeError,KeyError,IndexError,RuntimeError) as exc:
+                st.warning(f'Check the experiment inputs: {exc}')

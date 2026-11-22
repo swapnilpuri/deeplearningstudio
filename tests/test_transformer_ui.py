@@ -15,7 +15,8 @@ def start(section=SECTIONS[0]):
     app = AppTest.from_file(str(Path(__file__).resolve().parents[1]/'app.py'),default_timeout=45).run()
     app.radio(key='workspace').set_value('Learning Studio').run()
     app.selectbox(key='learn_lesson').set_value('transformer').run()
-    app.selectbox(key='m10_section').set_value(section).run()
+    app.session_state['m10_section'] = section
+    app.run()
     assert not app.exception and not app.warning
     return app
 
@@ -49,11 +50,14 @@ def test_norm_stage_switch_and_components():
     app.selectbox(key='m10_norm').set_value('Post-LayerNorm').run()
     assert not app.exception and not app.warning
     assert 'residual1' in app.selectbox(key='m10_stage').options
-    app.selectbox(key='m10_section').set_value(SECTIONS[6]).run()
+    app.session_state['m10_section'] = SECTIONS[6]
+    app.run()
     app.checkbox(key='m10_residual').uncheck().run()
-    app.selectbox(key='m10_section').set_value(SECTIONS[7]).run()
+    app.session_state['m10_section'] = SECTIONS[7]
+    app.run()
     app.slider(key='m10_gamma').set_value(2.).run()
-    app.selectbox(key='m10_section').set_value(SECTIONS[8]).run()
+    app.session_state['m10_section'] = SECTIONS[8]
+    app.run()
     app.selectbox(key='m10_activation').set_value('ReLU').run()
     assert not app.warning and not app.exception
 
