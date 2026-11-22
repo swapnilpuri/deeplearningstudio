@@ -154,3 +154,19 @@ offline on CPU without model downloads. M8 trained skip-gram weights can be reus
 from the same session. See [Volume 7](docs/VOLUME_7_SELF_ATTENTION.md),
 [M9 acceptance](docs/milestones/M9_ACCEPTANCE_CRITERIA.md) and
 [completion evidence](docs/milestones/M9_COMPLETION_REPORT.md).
+
+## M10 multi-head attention and Transformer blocks
+
+Choose **Learning Studio → Multi-Head Attention & Transformer Blocks**. Twelve
+sections expose independent Q/K/V head projections, shared-scale probability
+heatmaps, causal/padding masks, concatenation/Wo, controlled single-head comparison,
+residuals, affine LayerNorm, ReLU/GELU FFN and pre/post-norm block diagrams with
+selectable tensor stages. Reuse M8 embeddings or provide a small custom matrix.
+
+Explicit CPU training fits a cross-position synthetic mean task with SGD/Adam;
+inspect loss, gradients, parameter changes and before/after head patterns. Reset
+restores seeded initialization. Twelve exercises, notes and completion reuse
+progress v1 JSON. Standard equal heads only; no stack, generation or downloads.
+See [Volume 8](docs/VOLUME_8_TRANSFORMER_BLOCKS.md),
+[acceptance](docs/milestones/M10_ACCEPTANCE_CRITERIA.md) and
+[completion evidence](docs/milestones/M10_COMPLETION_REPORT.md).

@@ -9,7 +9,7 @@
 | M7 | LSTM gates/states, schema v4, builder, memory/forecast training, RNN comparison, BPTT, packing, Volume 5 | Merged; 181 automated tests and core browser workflows passed; remaining manual/independent acceptance pending |
 | M8 | Embedding lookup/gradients, tokenization, skip-gram, retrieval, pooling, positions, schema v5, text classification, Volume 6 | Implemented; 253 regression tests, real-server and core browser workflows/file roundtrip passed; independent acceptance pending |
 | M9 | Single-head self-attention, projections, masking, contextual outputs, routing training, exercises, Volume 7 | Implemented; validation evidence in M9 completion report; independent acceptance pending |
-| M10 | Multi-head attention | Planned |
+| M10 | Multi-head attention, residuals, LayerNorm, FFN, pre/post-norm block, deterministic training, Volume 8 | Implemented; 330 regression tests and 27 live-server snapshots passed; browser visual/independent acceptance pending |
 | M11 | Transformer encoder | Planned |
 | M12 | Transformer decoder | Planned |
 | M13 | Mini GPT | Planned |
@@ -34,3 +34,10 @@ See [Volume 6](VOLUME_6_EMBEDDINGS.md) and [M8 evidence](milestones/M8_COMPLETIO
 M9 reuses M8 embeddings and progress v1, adding framework-independent validation and
 PyTorch differentiable single-head primitives. See [Volume 7](VOLUME_7_SELF_ATTENTION.md)
 and [M9 evidence](milestones/M9_COMPLETION_REPORT.md). Multi-head composition remains M10.
+
+M10 composes the existing M9 attention calculation into standard equally sized
+heads and a single Transformer block. It reuses M8 inputs and progress v1, with
+no changes to prior model schemas. See [Volume 8](VOLUME_8_TRANSFORMER_BLOCKS.md),
+[design](milestones/M10_DESIGN.md) and [evidence](milestones/M10_COMPLETION_REPORT.md).
+M11 can extend the validated block toward an encoder; generation and caching
+remain later work.
