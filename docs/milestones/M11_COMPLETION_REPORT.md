@@ -2,8 +2,9 @@
 
 Date: 2026-11-22 (America/Chicago).
 
-**Status: Partial — implementation and automated validation delivered; browser
-visual/keyboard/download-dialog and independent educational acceptance pending.**
+**Status: Partial — implementation, automated validation and core Edge browser
+visual/keyboard/download/import checks delivered; independent educational
+acceptance pending.**
 
 ## Delivered
 
@@ -50,18 +51,22 @@ existing repository `.venv`.
 | Initial positions/encoder/decoder numerical suite | 22 passed in 2.51s after correcting a test-only Tensor.cat typo |
 | Initial mathematical + UI suite | 43 passed in 47.66s; process exit 0, then sandbox temp cleanup permission traceback |
 | Expanded targeted suite under sandbox | 59 passed, 1 existing navigation test failed on Windows temp-file PermissionError; no assertion was weakened |
-| Full regression, sequential with normal temp-file access | **394 passed in 144.33s; zero failures/skips** |
+| Implementation full regression, sequential with normal temp-file access | **394 passed in 144.33s; zero failures/skips** |
+| Final full regression after Edge review fixes and new import test | **395 passed in 82.11s; zero failures/skips** |
 | Final targeted regression (M11 mathematics/UI + all navigation contracts) | **64 passed in 31.26s**, zero failures/skips |
+| Edge-fix focused UI regression | **6 passed in 37.74s**, including imported-note replacement and earlier-lesson preservation |
 | Final `ty` check of edited Python source and tests | All checks passed |
 | `compileall` and `git diff --check` | Passed; Git warns that an existing test file will normalize LF to CRLF |
-| Live Streamlit localhost agent API | **23 ready M11 snapshots**; final inspector rerun added 3 ready app/learning-path snapshots, no warning/error/exception elements |
+| Live Streamlit localhost agent API | **23 ready M11 snapshots**; inspector rerun and final Edge-fix rerun each added 3 ready app/learning-path snapshots, no warning/error/exception elements |
 | Live console | No warnings or tracebacks during successful runtime checks |
-| Browser visual / keyboard / narrow width / dialogs | Not executed; browser host unavailable and unrelated-window selection rejected by automatic approval review |
+| Edge browser visual / keyboard / narrow width / dialogs | Core workflows passed in a user-authorized dedicated local-app window; see M11_VISUAL_REVIEW.md for exact coverage and three fixes |
 | Optional GPU / fresh install / independent educational review | Not executed |
 
 Full regression includes all existing M1–M10 tests. Final targeted verification
 covers the small subsequent tensor-inspector input/output-shape clarification
 and test type narrowing, without changes to mathematical behavior.
+The later 395-test full run includes all three Edge-discovered fixes and the
+new notes-import regression. The earlier counts are retained as execution history.
 
 Reference parity: mapped custom row-vector Q/K/V/O to PyTorch encoder/decoder
 layer projections, zeroed reference attention biases, copied FFN/norm parameters,
@@ -121,8 +126,11 @@ hard-coding exact floating point values.
 - Browser inventory reported `The browser access host is unavailable`.
   Automatic approval review rejected selecting an unrelated existing Chrome
   window because reading it could expose private content outside the local-app
-  validation task. That action was not bypassed. Browser acceptance is pending;
-  explicit manual scenarios are in the acceptance document.
+  validation task. That action was not bypassed. On follow-up the user authorized
+  and opened a dedicated Edge window. Native access then verified the local URL
+  and the core browser checks passed. See [visual review](M11_VISUAL_REVIEW.md),
+  including the position-axis, architecture-readability and imported-note-editor
+  fixes found through actual browser use. Independent educational review remains.
 
 ## Commands
 
@@ -143,6 +151,11 @@ targets master. The GitHub connector's 403 was resolved by authenticated CLI PR
 creation. Initial push auto-review rejection was resolved by verifying the exact
 destination and explicit push instruction in the supplied request before retry.
 Full delivery evidence is in [M11_HANDOFF.md](M11_HANDOFF.md). Master is not merged.
+Follow-up Edge visual evidence and precise remaining review boundaries are in
+[M11_VISUAL_REVIEW.md](M11_VISUAL_REVIEW.md). The dedicated app window was restored
+to desktop width after narrow-window checks; the localhost app is left running
+for user review. One forced-reload Windows transport reset is recorded in that
+review; the earlier live-console-clean result applies to the initial agent run.
 Detailed request, design, acceptance map, Volume 9 guide, roadmap and README are
 included. M12 decoder scope is absorbed into the expanded M11 request; a new M12
 scope requires architecture-owner definition. Suggested next action is browser

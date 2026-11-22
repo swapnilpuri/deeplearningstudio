@@ -1,7 +1,7 @@
 # M11 handoff — Transformer encoder and decoder
 
-- Status: Partial; implementation/automated validation delivered, browser and
-  independent educational acceptance pending.
+- Status: Partial; implementation, automated validation and core Edge browser
+  validation delivered; independent educational acceptance pending.
 - Base: `41e8cbfa6dd7d6cc9681dadc1693c4f356add0d7`, fetched remote master with
   M10 PR #7 and shared horizontal navigation PR #8 merged.
 - Branch: `feature/m11-transformer-encoder-decoder`.
@@ -28,19 +28,28 @@ training exact match `0/16 → 16/16` in 10.03s. No held-out generalization clai
 
 ## Validation and gaps
 
-- Full regression: **394 passed in 144.33s**, zero failures/skips.
+- Final full regression after Edge fixes: **395 passed in 82.11s**, zero failures/skips
+  (prior implementation full run: 394 passed in 144.33s).
 - Final targeted regression after tensor-inspector clarification: **64 passed in
   31.26s**, zero failures/skips.
+- Edge-fix focused UI regression: **6 passed in 37.74s**, including new imported
+  notes/editor and earlier-lesson preservation coverage.
 - Type check: all checks passed; compilation/diff checks passed.
 - Live server: 23 ready M11 snapshots, no warning/error/exception elements;
-  plus 3 ready snapshots for the final input/output-shape inspector check.
-  Consoles clean; both temporary servers stopped.
+  plus 3 ready inspector snapshots and 3 ready final Edge-fix snapshots.
+  Initial consoles clean and both initial temporary servers stopped. Follow-up
+  localhost app is left running for review; a forced-reload Windows transport
+  reset is recorded in the visual report, with no application error panel.
 - Initial sandbox runs had Windows temp/cache errors; normal-permission full
   regression and type checking succeeded. Report records all initial failures.
-- Browser host unavailable. Automatic approval review rejected reading an
-  unrelated Chrome window due to private-content risk; not bypassed.
-- Visual/keyboard/narrow viewport/download dialogs, optional GPU, fresh install
-  and independent educational review are unverified.
+- On authorized follow-up, native access to the dedicated Edge local-app window
+  succeeded. Core desktop/narrow layout, keyboard, plots, training, saved/draft
+  state, download/file picker and fresh-session import passed. See
+  [visual review](M11_VISUAL_REVIEW.md) for exact coverage and fixes.
+- Position axes and architecture readability corrected. Fresh-session import
+  now updates the notes editor before rendering; regression test added.
+- Optional GPU, fresh install and independent educational review are unverified;
+  the Edge pass does not cover every configuration or assistive technology.
 
 ## Resume / next task
 
@@ -50,9 +59,9 @@ git switch feature/m11-transformer-encoder-decoder
 .\.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q
 ```
 
-Choose Learning Studio → Transformer Encoder & Decoder. Execute the browser
-scenarios in acceptance, review the educational content, and define the next
-M12 scope. Do not merge into master without authorization.
+Choose Learning Studio → Transformer Encoder & Decoder. Review the recorded
+browser evidence and educational content, then define the next M12 scope.
+Do not merge into master without authorization.
 
 ## Git delivery
 

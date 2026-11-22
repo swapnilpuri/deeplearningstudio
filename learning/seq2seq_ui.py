@@ -31,8 +31,11 @@ def _tensor(value, name):
     st.dataframe(pd.DataFrame(value.numpy()), alt=name)
 
 
-def _plot(values, keys, queries, title, key, probability=True):
-    st.plotly_chart(attention_figure(values, keys, queries, title, probability),
+def _plot(values, keys, queries, title, key, probability=True, axes=None):
+    figure = attention_figure(values, keys, queries, title, probability)
+    if axes is not None:
+        figure.update_layout(xaxis_title=axes[0], yaxis_title=axes[1])
+    st.plotly_chart(figure,
                     key='m11_'+key, width='stretch', alt=title)
 
 
@@ -156,7 +159,8 @@ def _concepts(model, source, target, trace):
     for name in ('token', 'position', 'combined'):
         _tensor(positions[name], 'Position explorer '+name)
     _plot(positions['position'][0], [str(i) for i in range(model.spec.block.d_model)],
-          [str(i) for i in range(length)], 'Positions × embedding dimensions', 'positions', False)
+          [str(i) for i in range(length)], 'Positions × embedding dimensions', 'positions', False,
+          axes=('Embedding dimension', 'Position index'))
     st.markdown('Each FFN applies **Linear → activation → Linear** independently per token. Residual addition preserves D; '
                 'LayerNorm normalizes each token across its feature dimension. The final linear layer maps decoder features to target vocabulary logits.')
     _architecture(model, trace, source, target)
@@ -314,6 +318,8 @@ def _quiz():
 
 
 def _exercises():
+    if 'm11_imported_notes' in st.session_state:
+        st.session_state.m11_notes = st.session_state.pop('m11_imported_notes')
     for i, text in enumerate(EXERCISES):
         st.markdown(f'{i+1}. {text}')
     st.write('Check your understanding in the Quiz tab; each of its 15 questions provides correctness and explanatory feedback.')
@@ -330,6 +336,8 @@ def _exercises():
     upload = st.file_uploader('Import learning progress', type='json', key='m11_import')
     if upload and st.button('Load progress', key='m11_load'):
         st.session_state.learning_progress_v1 = load_progress(upload.getvalue())
+        st.session_state.m11_imported_notes = st.session_state.learning_progress_v1.get(
+            'exercise_notes', {}).get('seq2seq', '')
         st.rerun()
 
 

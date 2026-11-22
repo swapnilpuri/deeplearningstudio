@@ -52,3 +52,8 @@ outcomes and unverified checks are in [M11_COMPLETION_REPORT.md](M11_COMPLETION_
 No manual check should be marked passed unless actually executed. Independent
 educational review and optional GPU validation remain separate from unit/runtime
 acceptance.
+
+Core Edge desktop/narrow-window, keyboard, plotting/training, state preservation
+and file round-trip evidence is now recorded in [M11_VISUAL_REVIEW.md](M11_VISUAL_REVIEW.md).
+That report distinguishes actual browser checks from automated coverage and
+lists the three issues found and verified fixes.

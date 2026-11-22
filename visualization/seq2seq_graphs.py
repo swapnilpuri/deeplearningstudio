@@ -13,15 +13,17 @@ def attention_figure(values, source_labels, target_labels, title, probability=Tr
 
 
 def architecture_diagram(spec):
-    lines = ['digraph transformer {', 'rankdir=LR;',
+    lines = ['digraph transformer {', 'rankdir=TB;',
+             'graph [ranksep=0.3,nodesep=0.4];',
+             'node [shape=box,style=rounded,fontsize=12]; edge [fontsize=10];',
              'subgraph cluster_encoder { label="Encoder: source stream";',
-             f'src [label="Source IDs → embeddings + positions → Dropout({spec.dropout})"];']
+             f'src [label="Source IDs\\nEmbeddings + positions\\nDropout({spec.dropout})"];']
     pre = spec.block.norm == 'Pre-LayerNorm'
 
     def layer(prefix, previous, operations):
         for j, operation in enumerate(operations):
             name = f'{prefix}_{j}'
-            operation = f'{operation} → Dropout({spec.dropout})'
+            operation = f'{operation}\\nDropout({spec.dropout})'
             if pre:
                 lines.extend([f'{name}n [label="LN{j+1}"];', f'{name}a [label="{operation}"];',
                               f'{name}r [label="Add"];',
@@ -41,7 +43,7 @@ def architecture_diagram(spec):
         previous = layer(f'e{i}', previous, ('Bidirectional self-attention', 'FFN'))
     lines.extend([f'{previous} -> memory;', 'memory [label="Encoder memory [B,S,D]"];', '}',
                   'subgraph cluster_decoder { label="Decoder: target stream";',
-                  f'tgt [label="Target prefix IDs → embeddings + positions → Dropout({spec.dropout})"];'])
+                  f'tgt [label="Target prefix IDs\\nEmbeddings + positions\\nDropout({spec.dropout})"];'])
     previous = 'tgt'
     for i in range(spec.decoder_layers):
         previous = layer(f'd{i}', previous, ('Causal self-attention', 'Cross-attention', 'FFN'))

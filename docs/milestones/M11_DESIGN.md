@@ -69,6 +69,10 @@ session and reused when configuration/input identity matches. Mutable models
 are never globally cached. Training occurs only under `m11_train`; results stay
 available across panels and control changes, with the saved configuration shown.
 Reset removes training/generation/trace results. No model downloads or services.
+On explicit progress import, the stored M11 note is queued and applied before
+creating the notes editor on the next rerun. This replaces the old draft only
+when importing, while preserving ordinary cross-tab drafts. The model diagram
+uses vertical source/target paths and multiline nodes for readable labels.
 
 Training uses 16 fixed synthetic examples (content length 1–3), seeded CPU
 minibatch sampling, Adam/SGD, PAD-aware CE, norm clipping at 1, and full-set
