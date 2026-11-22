@@ -1,6 +1,6 @@
-# DeepLearningStudio — M6 RNN Learning Studio
+# DeepLearningStudio — M8 Embedding Network Learning Studio
 
-An interactive Streamlit learning application with four workspaces: **Neural Network Studio**, **Dataset Management**, **Training Studio**, and **Learning Studio** with feed-forward, deep, convolutional and recurrent neural network lessons.
+An interactive Streamlit learning application with four workspaces: **Neural Network Studio**, **Dataset Management**, **Training Studio**, and **Learning Studio** with feed-forward, deep, convolutional, RNN, LSTM and embedding network lessons.
 
 ## Requirements
 
@@ -37,6 +37,8 @@ Open `http://localhost:8501` in your browser. If `uv` is missing, install it fro
 
 ## Detailed documentation
 
+- [Volume 6 — Embeddings and Representation Learning](docs/VOLUME_6_EMBEDDINGS.md) — tokenization, lookup, gradients, skip-gram, similarity/retrieval, sentence pooling, positions, classification, experiments and quizzes.
+- [Volume 5 — LSTM](docs/VOLUME_5_LSTM.md) — gated memory, training, gradients and comparison tutorials.
 - [Volume 1 — Feed-Forward Neural Networks](docs/VOLUME_1_FOUNDATIONS.md) — neurons, activations, matrix shapes, MSE, gradients, guided forward and backprop tutorials.
 - [Volume 4 — Recurrent Neural Networks](docs/VOLUME_4_RNN.md) — recurrence, sequence tensors, BPTT, padding, classification and forecasting tutorials, experiments and quiz answers.
 - [Volume 3 — Convolutional Neural Networks](docs/VOLUME_3_CNN.md) — convolution/pooling illustrations, tensor shapes, training workflow, backpropagation, tutorials and quiz explanations.
@@ -73,7 +75,7 @@ app.py (sidebar/workspace routing; existing v3 functionality)
         └── visualization/learning_graphs.py # reusable tensor/gradient plots
 ```
 
-`ModelSpec` is a framework-neutral DTO. The adapter registry currently exposes **PyTorch only**. TensorFlow/Keras is planned for a future milestone. CNN uses schema v2, RNN schema v3 and M7 LSTM schema v4, alongside unchanged dense v1 and progress v1. Embeddings, attention, Transformers and Mini GPT remain planned.
+`ModelSpec` is a framework-neutral DTO. The adapter registry currently exposes **PyTorch only**. TensorFlow/Keras is deferred. CNN uses schema v2, RNN v3, LSTM v4 and embedding v5, alongside unchanged dense v1 and progress v1. Attention, Transformers and Mini GPT remain planned.
 
 ## Tests and validation
 
@@ -122,3 +124,21 @@ superiority. See [Volume 5](docs/VOLUME_5_LSTM.md), [M7 completion](docs/milesto
 for tutorials, verification evidence and remaining acceptance checks.
 
 M5 baseline: **70 passed**. Final M6 regression: **135 passed** on Windows, including old ONNX checks and 65 new recurrent/runtime tests. See [M6 completion](docs/milestones/M6_COMPLETION_REPORT.md), [handoff](docs/milestones/M6_HANDOFF.md), [acceptance](docs/milestones/M6_ACCEPTANCE_CRITERIA.md) and [design](docs/milestones/M6_DESIGN.md) for final evidence and verification limits. Browser visual acceptance remains separate from headless and localhost runtime checks.
+
+## M8 — Embedding Network Learning Studio
+
+Select Learning Studio → Embedding Network. Twelve sections cover 22 concepts,
+word/character tokenization and vocabularies, real nn.Embedding lookup and one-hot
+agreement, gradients with finite differences and SGD/Adam, four similarity metrics,
+exact retrieval, offline skip-gram negative sampling, initial/trained 2D/3D/PCA/t-SNE
+plots, masked sentence pooling, learned/sinusoidal positions, static/contextual
+explanations, a versioned architecture builder and supervised text classification.
+Twenty-one quiz questions and guided experiments reuse progress schema v1.
+
+Training is explicit, CPU-friendly and offline. Classifier vocabulary fits train
+only; held-out evaluation is a separate action. Random vectors have no semantic
+claims; decreasing toy loss is not evidence of broad semantic quality. Position
+addition does not contextualize tokens. No new dependencies or attention/RAG.
+See [Volume 6](docs/VOLUME_6_EMBEDDINGS.md), [M8 handoff](docs/milestones/M8_HANDOFF.md),
+[completion evidence](docs/milestones/M8_COMPLETION_REPORT.md) and
+[acceptance matrix](docs/milestones/M8_ACCEPTANCE_CRITERIA.md) for current status.
