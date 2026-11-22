@@ -10,10 +10,18 @@
 | M8 | Embedding lookup/gradients, tokenization, skip-gram, retrieval, pooling, positions, schema v5, text classification, Volume 6 | Implemented; 253 regression tests, real-server and core browser workflows/file roundtrip passed; independent acceptance pending |
 | M9 | Single-head self-attention, projections, masking, contextual outputs, routing training, exercises, Volume 7 | Implemented; validation evidence in M9 completion report; independent acceptance pending |
 | M10 | Multi-head attention, residuals, LayerNorm, FFN, pre/post-norm block, deterministic training, Volume 8 | Implemented; 330 regression tests and 27 live-server snapshots passed; browser visual/independent acceptance pending |
-| M11 | Transformer encoder | Planned |
-| M12 | Transformer decoder | Planned |
+| M11 | Transformer encoder and decoder, cross-attention, positions, tiny seq2seq training, Volume 9 | Implemented; validation and review status in M11 completion report |
+| M12 | Scope to be defined after M11 review; previous decoder scope is included in expanded M11 | Awaiting architecture-owner scope decision |
 | M13 | Mini GPT | Planned |
 | Later | TensorFlow/Keras adapter | Deferred until PyTorch learning modules stable |
+
+M11 expands the original encoder-only milestone according to its approved
+implementation request, including the decoder foundation previously listed as
+M12. It reuses M8–M10 mathematical components, standardized lazy horizontal tabs
+and progress v1, with no later milestone implementation. See
+[Volume 9](VOLUME_9_ENCODER_DECODER.md), [design](milestones/M11_DESIGN.md),
+[acceptance map](milestones/M11_ACCEPTANCE_CRITERIA.md), and
+[execution evidence](milestones/M11_COMPLETION_REPORT.md).
 
 M5 uses a new framework-neutral CNN schema v2 alongside the unchanged dense schema v1. This intentionally avoids premature generic operator support for Transformer architecture.
 

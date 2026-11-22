@@ -155,6 +155,19 @@ from the same session. See [Volume 7](docs/VOLUME_7_SELF_ATTENTION.md),
 [M9 acceptance](docs/milestones/M9_ACCEPTANCE_CRITERIA.md) and
 [completion evidence](docs/milestones/M9_COMPLETION_REPORT.md).
 
+## M11 Transformer encoder and decoder
+
+Choose **Learning Studio → Transformer Encoder & Decoder** for seven shared
+horizontal tabs covering fixed/learned positions, encoder/decoder stacks,
+rectangular cross-attention, masks, teacher forcing, tiny offline copy/reverse
+training, greedy generation, tensor/architecture inspection and fifteen quiz
+checks. Training runs only on button press and results survive tab changes.
+Defaults use a small CPU model and no dataset downloads. Accuracies describe
+training examples, not held-out generalization. See [Volume 9](docs/VOLUME_9_ENCODER_DECODER.md),
+[design](docs/milestones/M11_DESIGN.md),
+[acceptance](docs/milestones/M11_ACCEPTANCE_CRITERIA.md), and
+[execution evidence](docs/milestones/M11_COMPLETION_REPORT.md).
+
 ## M10 multi-head attention and Transformer blocks
 
 Choose **Learning Studio → Multi-Head Attention & Transformer Blocks**. Twelve

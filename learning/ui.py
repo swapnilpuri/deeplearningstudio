@@ -16,7 +16,11 @@ def render_learning_studio():
     if 'learning_progress_v1' not in st.session_state:
         st.session_state.learning_progress_v1 = empty_progress()
     progress = st.session_state.learning_progress_v1
-    lesson = st.selectbox('Learning path', [*LESSONS, 'cnn', 'rnn', 'lstm', 'embedding', 'attention', 'transformer'], format_func=lambda k: LESSONS[k]['title'] if k in LESSONS else {'cnn':'Convolutional Neural Network (CNN)', 'rnn':'Recurrent Neural Network (RNN)', 'lstm':'Long Short-Term Memory (LSTM)', 'embedding':'Embedding Network', 'attention':'Single-Head Self-Attention Learning Studio', 'transformer':'Multi-Head Attention & Transformer Blocks'}[k], key='learn_lesson')
+    lesson = st.selectbox('Learning path', [*LESSONS, 'cnn', 'rnn', 'lstm', 'embedding', 'attention', 'transformer', 'seq2seq'], format_func=lambda k: LESSONS[k]['title'] if k in LESSONS else {'cnn':'Convolutional Neural Network (CNN)', 'rnn':'Recurrent Neural Network (RNN)', 'lstm':'Long Short-Term Memory (LSTM)', 'embedding':'Embedding Network', 'attention':'Single-Head Self-Attention Learning Studio', 'transformer':'Multi-Head Attention & Transformer Blocks', 'seq2seq':'Transformer Encoder & Decoder'}[k], key='learn_lesson')
+    if lesson == 'seq2seq':
+        from .seq2seq_ui import render_seq2seq_learning_studio
+        render_seq2seq_learning_studio()
+        return
     if lesson == 'transformer':
         from .transformer_ui import render_transformer_learning_studio
         render_transformer_learning_studio()
