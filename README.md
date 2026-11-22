@@ -1,6 +1,6 @@
-# DeepLearningStudio — M8 Embedding Network Learning Studio
+# DeepLearningStudio — M9 Single-Head Self-Attention Learning Studio
 
-An interactive Streamlit learning application with four workspaces: **Neural Network Studio**, **Dataset Management**, **Training Studio**, and **Learning Studio** with feed-forward, deep, convolutional, RNN, LSTM and embedding network lessons.
+An interactive Streamlit learning application with four workspaces: **Neural Network Studio**, **Dataset Management**, **Training Studio**, and **Learning Studio** with feed-forward, deep, convolutional, RNN, LSTM, embedding and single-head self-attention lessons.
 
 ## Requirements
 
@@ -142,3 +142,15 @@ addition does not contextualize tokens. No new dependencies or attention/RAG.
 See [Volume 6](docs/VOLUME_6_EMBEDDINGS.md), [M8 handoff](docs/milestones/M8_HANDOFF.md),
 [completion evidence](docs/milestones/M8_COMPLETION_REPORT.md) and
 [acceptance matrix](docs/milestones/M8_ACCEPTANCE_CRITERIA.md) for current status.
+
+## M9 self-attention learning studio
+
+Choose **Learning Studio → Single-Head Self-Attention Learning Studio**. Inspect
+editable embeddings and Q/K/V, scores/scaling, causal/padding masks, normalized
+routing and contextual outputs across nine progressive sections. Train the explicit
+synthetic routing experiment with SGD/Adam; inspect gradients and reset weights.
+Nine checked exercises reuse existing progress export/import. Everything runs
+offline on CPU without model downloads. M8 trained skip-gram weights can be reused
+from the same session. See [Volume 7](docs/VOLUME_7_SELF_ATTENTION.md),
+[M9 acceptance](docs/milestones/M9_ACCEPTANCE_CRITERIA.md) and
+[completion evidence](docs/milestones/M9_COMPLETION_REPORT.md).
