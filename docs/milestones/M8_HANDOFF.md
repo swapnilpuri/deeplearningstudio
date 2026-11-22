@@ -6,7 +6,12 @@ Branch: feature/m8-embedding-learning-studio.
 Starting commit: dd878cac84c789ce14c17eb6061e32ec220baf6a, clean master,
 M7 merge confirmed; remote master matched via git ls-remote deeplearningstudio.
 Current containing commit: resolve git rev-parse HEAD (a file cannot name its own
-containing commit). Git delivery details appended after execution.
+containing commit). Implementation commit: f2d76a3cf90805d6bbe830ead58cff5e5e9a04d8.
+Pushed and verified against the remote feature branch. [Draft PR #5](https://github.com/swapnilpuri/deeplearningstudio/pull/5)
+targets master; open/draft, correct head verified, no merge. Connector creation
+returned 403; CLI creation succeeded after user-requested resumption of an initial
+approval-review usage-limit interruption. No approval bypass. This final follow-up
+is documentation only; no source changes after the 253-test regression.
 
 References: M8_REQUIREMENTS.md, M8_DESIGN.md, M8_ACCEPTANCE_CRITERIA.md,
 ../adr/ADR-0004-embedding-representations.md.

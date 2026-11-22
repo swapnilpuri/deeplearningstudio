@@ -99,5 +99,17 @@ manual/browser and independent acceptance pending.** See M8_ACCEPTANCE_CRITERIA.
 
 ## Git delivery
 
-Delivery details are appended after commit/push/PR execution. Final containing
-commit is resolved by `git rev-parse HEAD`; no automatic merge is authorized.
+Implementation commit: `f2d76a3cf90805d6bbe830ead58cff5e5e9a04d8`, pushed on
+`feature/m8-embedding-learning-studio` and verified against the remote branch.
+[Draft PR #5](https://github.com/swapnilpuri/deeplearningstudio/pull/5) targets
+`master`; verified open/draft with the correct head commit. No merge performed.
+
+The GitHub connector returned 403 (resource not accessible by integration) for PR
+creation. The first GitHub CLI attempt was not executed because automatic approval
+review hit an account usage limit. After the user requested resumption, the same
+approved CLI workflow created the PR successfully. No approval bypass was used.
+
+This delivery follow-up changes documentation only; source remains exactly as
+tested in the 253-test regression, so tests were not repeated. Final containing
+documentation commit is resolved by `git rev-parse HEAD`. Browser/manual and
+independent acceptance remain pending as recorded above.

@@ -26,7 +26,7 @@ independent acceptance sign-off.
 | Quizzes/progress backward compatibility | 21 questions, notes, completion; actual AppTest legacy JSON upload/load preserving M4–M7 records | Passed headless/runtime; browser roundtrip pending |
 | Dense/CNN/RNN/LSTM, datasets/training/ONNX | complete regression 253 passed, no skips/failures | Passed |
 | Volume 6, README, roadmap, ADR and milestone records | All created/updated; Volumes 1–5 unchanged | Implemented |
-| Commit/push/PR against master | Delivery recorded in completion/handoff after execution | See delivery records |
+| Commit/push/PR against master | f2d76a3 pushed and verified; draft PR #5 targets master, open/unmerged | Passed |
 | Manual/browser and independent acceptance | Browser helper could inspect the old local app but navigation/activation failed; no M8 rendering pass claimed | Unverified / pending |
 
 Optional BPE, analogies, external semantic search, pretrained models, vector indexes
