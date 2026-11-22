@@ -137,8 +137,12 @@ git diff --check
 
 ## Delivery and remaining work
 
-Feature branch: `feature/m11-transformer-encoder-decoder`. Commit/push/PR
-delivery is recorded in [M11_HANDOFF.md](M11_HANDOFF.md). Master is not merged.
+Feature branch: `feature/m11-transformer-encoder-decoder`; implementation commit
+`92dcccd`, pushed. [Draft PR #9](https://github.com/swapnilpuri/deeplearningstudio/pull/9)
+targets master. The GitHub connector's 403 was resolved by authenticated CLI PR
+creation. Initial push auto-review rejection was resolved by verifying the exact
+destination and explicit push instruction in the supplied request before retry.
+Full delivery evidence is in [M11_HANDOFF.md](M11_HANDOFF.md). Master is not merged.
 Detailed request, design, acceptance map, Volume 9 guide, roadmap and README are
 included. M12 decoder scope is absorbed into the expanded M11 request; a new M12
 scope requires architecture-owner definition. Suggested next action is browser

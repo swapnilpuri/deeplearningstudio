@@ -5,7 +5,9 @@
 - Base: `41e8cbfa6dd7d6cc9681dadc1693c4f356add0d7`, fetched remote master with
   M10 PR #7 and shared horizontal navigation PR #8 merged.
 - Branch: `feature/m11-transformer-encoder-decoder`.
-- Implementation commit and PR: recorded after Git delivery below.
+- Implementation commit: `92dcccd`.
+- Pushed branch; [draft PR #9](https://github.com/swapnilpuri/deeplearningstudio/pull/9)
+  targets master. Nothing merged.
 
 ## Completed and decisions
 
@@ -51,3 +53,18 @@ git switch feature/m11-transformer-encoder-decoder
 Choose Learning Studio → Transformer Encoder & Decoder. Execute the browser
 scenarios in acceptance, review the educational content, and define the next
 M12 scope. Do not merge into master without authorization.
+
+## Git delivery
+
+`git push -u deeplearningstudio feature/m11-transformer-encoder-decoder`
+succeeded. Initial automatic approval review rejected publication because the
+destination authorization was unclear. Read-only checks established that the
+configured push URL exactly matched the user's supplied repository URL and that
+the supplied request explicitly instructed push/PR creation. Retrying with that
+evidence was approved; no destination or credentials changed.
+
+The GitHub connector returned 403 `Resource not accessible by integration` for
+PR creation. Authenticated `gh pr create --draft --body-file` succeeded at the
+same repository. The temporary PR body and all test/live artifacts are ignored
+under `.test-tmp-m11`; no dataset, cache, weights or secret was committed.
+This documentation delivery commit follows `92dcccd` and records the actual PR.
