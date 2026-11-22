@@ -116,3 +116,8 @@ Acceptance matrix: [M9_ACCEPTANCE_CRITERIA.md](M9_ACCEPTANCE_CRITERIA.md).
 Next: independent acceptance and M10 multi-head composition using the tested math
 and trace structures, keeping value width explicit and mask semantics consistent.
 Git outcome is recorded in [M9_HANDOFF.md](M9_HANDOFF.md).
+
+Git delivery: implementation commit `77e3092`, pushed feature branch, and
+[draft PR #6](https://github.com/swapnilpuri/deeplearningstudio/pull/6) targeting master.
+GitHub connector PR creation returned 403; installed authenticated `gh pr create`
+with a temporary body file succeeded. Master was not merged. See handoff for details.

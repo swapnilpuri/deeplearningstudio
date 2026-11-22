@@ -27,3 +27,16 @@ git switch feature/m9-self-attention-learning-studio
 .\.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
+
+## Git delivery
+
+Implementation commit: `77e3092c3944879e9b25244aa8a2bfb1b0a7f1e2`.
+Feature branch pushed and tracking deeplearningstudio/feature/m9-self-attention-learning-studio.
+Draft PR targeting master: https://github.com/swapnilpuri/deeplearningstudio/pull/6.
+The connected GitHub integration returned 403 Resource not accessible by integration;
+installed authenticated GitHub CLI successfully created the draft using `gh pr create
+--repo swapnilpuri/deeplearningstudio --base master --head
+feature/m9-self-attention-learning-studio --draft --title "M9: Single-head
+self-attention learning studio" --body-file <temporary PR body file>`.
+The temporary verification server was stopped; no existing user server was touched.
+Master remains unchanged. The later documentation-only commit records this delivery.
