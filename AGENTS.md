@@ -42,6 +42,26 @@ For the full operating model see `docs/AI_DEVELOPMENT_OPERATING_MODEL.md`.
 - No unnecessary ZIPs, duplicate project folders, speculative framework rewrites, or verbose repeated logs.
 - Efficiency must not compromise correctness, tests, security, design consistency, or acceptance criteria.
 
+## Learning-section navigation (M11 and future milestones)
+
+All new DeepLearningStudio educational modules must use the standardized
+horizontal learning-section navigation component. Dropdowns must not be used
+as the primary mechanism for switching educational sections unless there is
+an explicitly documented exception.
+
+Use `learning.navigation.render_learning_section_navigation(sections, module_key)`.
+Pass ordered labels or an ordered ID-to-label mapping and a unique module prefix.
+Render each returned tab inside `with tab:` only when `tab.open` is true.
+Use stable, module-prefixed input keys and `persist_state='session'` in lazy
+panels. Keep training behind explicit buttons and retain results in session
+state. Do not use button, upload or editor state as ordinary input state.
+Native tabs supply styling and overflow; do not add custom CSS/JS or substitute
+a dropdown for long section lists. Keep workspace/learning-path selectors separate.
+The existing foundation, architecture and general training workspaces use
+`lazy=False` to preserve their eager cross-panel dependencies and browser-only
+tab switching. Dataset Management is a single workflow, so it needs no section tabs.
+See `docs/milestones/UI_NAVIGATION_HANDOFF.md` for validation and manual review.
+
 ## Security and approval
 
 Ask before destructive actions, discarding local changes, force pushes, schema/data migrations with irreversible impact, deployments, secret/configuration changes, or modifying permissions. Never store credentials in source, docs, commits, or logs.

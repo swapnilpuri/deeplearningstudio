@@ -2,6 +2,7 @@
 import json
 import pandas as pd
 import streamlit as st
+from .navigation import render_learning_section_navigation
 import torch
 from .rnn_spec import RNNModelSpec
 from .rnn_adapter import RNNAdapter, cell_trace, demo_cell, gradient_experiment, variable_length_demo
@@ -25,15 +26,15 @@ def _plot(figure, key, alt):
 
 
 def _concepts():
-    index = st.selectbox('Concept',range(len(TOPICS)),format_func=lambda i:TOPICS[i][0],key='rnn_topic')
+    index = st.selectbox('Concept',range(len(TOPICS)),format_func=lambda i:TOPICS[i][0],key='rnn_topic', persist_state='session')
     title,explanation,formula,shapes,use,experiment = TOPICS[index]
     st.subheader(title);st.write(explanation);st.latex(formula)
     st.write('Tensor walkthrough: '+shapes)
     st.write('Practical use: '+use);st.info('Guided experiment: '+experiment)
     st.caption('Use the dedicated explorers for editable weights, stacked execution, training and padding. This live preview uses the same real PyTorch computations.')
-    length = st.slider('Concept sequence length',2,30,8,key='rnn_concept_length')
-    gain = st.slider('Concept recurrent gain',.1,1.8,.5,.1,key='rnn_concept_gain')
-    activation = st.selectbox('Concept activation',['tanh','relu'],key='rnn_concept_activation')
+    length = st.slider('Concept sequence length',2,30,8,key='rnn_concept_length', persist_state='session')
+    gain = st.slider('Concept recurrent gain',.1,1.8,.5,.1,key='rnn_concept_gain', persist_state='session')
+    activation = st.selectbox('Concept activation',['tanh','relu'],key='rnn_concept_activation', persist_state='session')
     result = gradient_experiment(length,gain,activation)
     _plot(state_heatmap(result['states'].numpy()),'rnn_concept_states','Live recurrent states')
     _plot(gradient_figure(result['state_gradients']),'rnn_concept_grad','Live gradient magnitudes through time')
@@ -48,15 +49,15 @@ def _cell():
     i = a.slider('Input size',1,5,2,key='rnn_cell_i')
     h = b.slider('Hidden size',1,8,3,key='rnn_cell_h')
     t = c.slider('Sequence length',2,20,5,key='rnn_cell_t')
-    activation = st.selectbox('Cell activation',['tanh','relu'],key='rnn_cell_activation')
-    seed = int(st.number_input('Cell seed',0,2147483647,42,key='rnn_cell_seed'))
-    scale = st.slider('Weight initialization scale',.0,1.5,.5,.05,key='rnn_cell_scale')
-    initial = st.number_input('Initial hidden value',value=0.,key='rnn_cell_initial')
+    activation = st.selectbox('Cell activation',['tanh','relu'],key='rnn_cell_activation', persist_state='session')
+    seed = int(st.number_input('Cell seed',0,2147483647,42,key='rnn_cell_seed', persist_state='session'))
+    scale = st.slider('Weight initialization scale',.0,1.5,.5,.05,key='rnn_cell_scale', persist_state='session')
+    initial = st.number_input('Initial hidden value',value=0.,key='rnn_cell_initial', persist_state='session')
     x,wi,wh,bi,bh = demo_cell(i,h,t,seed,scale)
     x = torch.tensor(st.data_editor(pd.DataFrame(x.numpy()),key=f'rnn_input_{i}_{t}_{seed}',alt='Editable input sequence').to_numpy(),dtype=torch.float32)
-    custom = st.checkbox('Edit weights and biases as JSON',key='rnn_edit_weights')
+    custom = st.checkbox('Edit weights and biases as JSON',key='rnn_edit_weights', persist_state='session')
     if custom:
-        raw = st.text_area('Cell parameters JSON',json.dumps({'w_ih':wi.tolist(),'w_hh':wh.tolist(),'b_ih':bi.tolist(),'b_hh':bh.tolist()}),key=f'rnn_weights_{i}_{h}_{seed}_{scale}')
+        raw = st.text_area('Cell parameters JSON',json.dumps({'w_ih':wi.tolist(),'w_hh':wh.tolist(),'b_ih':bi.tolist(),'b_hh':bh.tolist()}),key=f'rnn_weights_{i}_{h}_{seed}_{scale}', persist_state='session')
         try:
             values = json.loads(raw)
             wi,wh,bi,bh = [torch.tensor(values[k],dtype=torch.float32) for k in ('w_ih','w_hh','b_ih','b_hh')]
@@ -71,7 +72,7 @@ def _cell():
     left,right = st.columns(2)
     left.button('Previous step',on_click=_move_step,args=(-1,t-1),key='rnn_previous')
     right.button('Next step',on_click=_move_step,args=(1,t-1),key='rnn_next')
-    selected = st.slider('Selected time step (zero-based)',0,t-1,key='rnn_step')
+    selected = st.slider('Selected time step (zero-based)',0,t-1,key='rnn_step', persist_state='session')
     _plot(unrolled_figure(x.numpy(),states.detach().numpy(),selected),'rnn_unrolled','Inputs and recurrent states with current step highlighted')
     _plot(state_heatmap(states.detach().numpy()),'rnn_cell_states','Hidden values across time')
     st.info('W_ih, W_hh and both biases are shared at every time step. Orange marks the current step; its left neighbor is the previous state. Hidden states are the cell outputs here; a task head is added in Architecture.')
@@ -83,7 +84,7 @@ def _cell():
         for name in ('input','previous','w_ih','w_hh'):_tensor(step[name],name)
     with right:
         for name in ('input_contribution','recurrent_contribution','b_ih','b_hh','preactivation','hidden'):_tensor(step[name],name)
-    unit = st.selectbox('Hidden unit arithmetic',range(h),key=f'rnn_arithmetic_{h}')
+    unit = st.selectbox('Hidden unit arithmetic',range(h),key=f'rnn_arithmetic_{h}', persist_state='session')
     parts = [step[k][unit].item() for k in ('input_contribution','b_ih','recurrent_contribution','b_hh')]
     st.write(f'Unit {unit}: '+' + '.join(f'({v:.6f})' for v in parts)+f' = {step["preactivation"][unit].item():.6f}; {activation} → {states[selected,unit].item():.6f}')
     _tensor(states[-1],'Original final state');_tensor(reverse[-1],'Reversed-order final state')
@@ -92,17 +93,17 @@ def _cell():
 
 def _architecture(tensor_only=False):
     prefix = 'rnn_tensor' if tensor_only else 'rnn_arch'
-    b = st.slider('Batch size',1,8,2,key=prefix+'_b')
-    t = st.slider('Tensor sequence length',2,20,5,key=prefix+'_t')
-    i = st.slider('Feature count',1,5,2,key=prefix+'_i')
-    h = st.slider('Hidden dimensions',1,24,4,key=prefix+'_h')
-    layers = st.slider('Number of RNN layers',1,4,2,key=prefix+'_layers')
-    outputs = st.slider('Head output features',1,8,2,key=prefix+'_outputs')
-    batch_first = st.checkbox('batch_first',True,key=prefix+'_batch_first')
-    activation = st.selectbox('Recurrent activation',['tanh','relu'],key=prefix+'_activation')
-    selection = st.selectbox('Output selection',['final','sequence'],key=prefix+'_selection')
-    bias = st.checkbox('Use recurrent and head biases',True,key=prefix+'_bias')
-    seed = int(st.number_input('Architecture seed',0,2147483647,42,key=prefix+'_seed'))
+    b = st.slider('Batch size',1,8,2,key=prefix+'_b', persist_state='session')
+    t = st.slider('Tensor sequence length',2,20,5,key=prefix+'_t', persist_state='session')
+    i = st.slider('Feature count',1,5,2,key=prefix+'_i', persist_state='session')
+    h = st.slider('Hidden dimensions',1,24,4,key=prefix+'_h', persist_state='session')
+    layers = st.slider('Number of RNN layers',1,4,2,key=prefix+'_layers', persist_state='session')
+    outputs = st.slider('Head output features',1,8,2,key=prefix+'_outputs', persist_state='session')
+    batch_first = st.checkbox('batch_first',True,key=prefix+'_batch_first', persist_state='session')
+    activation = st.selectbox('Recurrent activation',['tanh','relu'],key=prefix+'_activation', persist_state='session')
+    selection = st.selectbox('Output selection',['final','sequence'],key=prefix+'_selection', persist_state='session')
+    bias = st.checkbox('Use recurrent and head biases',True,key=prefix+'_bias', persist_state='session')
+    seed = int(st.number_input('Architecture seed',0,2147483647,42,key=prefix+'_seed', persist_state='session'))
     spec = RNNModelSpec(i,h,layers,outputs,activation,selection,bias,batch_first,seed)
     x = torch.randn((b,t,i) if batch_first else (t,b,i),generator=torch.Generator().manual_seed(seed))
     model,trace = RNNAdapter().trace(spec,x)
@@ -130,12 +131,12 @@ def _architecture(tensor_only=False):
 
 
 def _data_config(prefix):
-    task = st.selectbox('Sequence task',['classification','forecasting','memory'],key=prefix+'_task')
-    samples = st.slider('Samples',60,1200,240,60,key=prefix+'_samples')
-    length = st.slider('Data sequence length',2,40,8,key=prefix+'_length')
-    noise = st.slider('Sine noise',.0,.5,.05,.01,key=prefix+'_noise')
-    horizon = st.slider('Forecast horizon',1,10,1,key=prefix+'_horizon')
-    seed = int(st.number_input('Dataset seed',0,2147483647,42,key=prefix+'_seed'))
+    task = st.selectbox('Sequence task',['classification','forecasting','memory'],key=prefix+'_task', persist_state='session')
+    samples = st.slider('Samples',60,1200,240,60,key=prefix+'_samples', persist_state='session')
+    length = st.slider('Data sequence length',2,40,8,key=prefix+'_length', persist_state='session')
+    noise = st.slider('Sine noise',.0,.5,.05,.01,key=prefix+'_noise', persist_state='session')
+    horizon = st.slider('Forecast horizon',1,10,1,key=prefix+'_horizon', persist_state='session')
+    seed = int(st.number_input('Dataset seed',0,2147483647,42,key=prefix+'_seed', persist_state='session'))
     return {'task':task,'samples':samples,'sequence_length':length,'noise':noise,'horizon':horizon,'seed':seed}
 
 
@@ -149,7 +150,7 @@ def _datasets():
     st.write('Classification: label 1 when first < last; reversing the sequence flips the label. Memory: recall the sign of the first symbol. Forecasting: predict the next horizon values of a noisy sine source.')
     st.caption('Sine noise/horizon apply only to forecasting. All splits use 60% train, 20% validation and the remainder test. Distinct source-series IDs prevent overlapping windows across splits. Raw generated values need no fitted preprocessing.')
     st.table({part:len(data[part][0]) for part in ('train','validation','test')})
-    example = st.slider('Training example',0,len(data['train'][0])-1,0,key='rnn_data_example')
+    example = st.slider('Training example',0,len(data['train'][0])-1,0,key='rnn_data_example', persist_state='session')
     x,y = data['train'];st.line_chart(pd.DataFrame({'input':x[example,:,0].numpy()}),alt='Selected training input sequence')
     st.write('Target:',y[example].tolist())
     st.json({part:data['source_series'][part][:5].tolist() for part in ('train','validation','test')})
@@ -157,14 +158,14 @@ def _datasets():
 
 def _training():
     settings = _data_config('rnn_train')
-    epochs = st.slider('Epochs',1,40,8,key='rnn_train_epochs')
-    batch = st.selectbox('Batch size',[16,32,64,128],index=1,key='rnn_train_batch')
-    lr = st.number_input('Learning rate',.0001,1.,.01,.001,format='%.4f',key='rnn_train_lr')
-    hidden = st.slider('Training hidden size',2,32,12,key='rnn_train_hidden')
-    layers = st.slider('Training layers',1,4,1,key='rnn_train_layers')
-    activation = st.selectbox('Training activation',['tanh','relu'],key='rnn_train_activation')
-    optimizer = st.selectbox('Optimizer',['Adam','SGD'],key='rnn_train_optimizer')
-    clip = st.number_input('Gradient clip threshold (0 disables)',0.,100.,1.,.1,key='rnn_train_clip')
+    epochs = st.slider('Epochs',1,40,8,key='rnn_train_epochs', persist_state='session')
+    batch = st.selectbox('Batch size',[16,32,64,128],index=1,key='rnn_train_batch', persist_state='session')
+    lr = st.number_input('Learning rate',.0001,1.,.01,.001,format='%.4f',key='rnn_train_lr', persist_state='session')
+    hidden = st.slider('Training hidden size',2,32,12,key='rnn_train_hidden', persist_state='session')
+    layers = st.slider('Training layers',1,4,1,key='rnn_train_layers', persist_state='session')
+    activation = st.selectbox('Training activation',['tanh','relu'],key='rnn_train_activation', persist_state='session')
+    optimizer = st.selectbox('Optimizer',['Adam','SGD'],key='rnn_train_optimizer', persist_state='session')
+    clip = st.number_input('Gradient clip threshold (0 disables)',0.,100.,1.,.1,key='rnn_train_clip', persist_state='session')
     config = RNNTrainingConfig(**settings,epochs=epochs,batch_size=batch,learning_rate=lr,hidden_size=hidden,
                                num_layers=layers,optimizer=optimizer,clip=clip,activation=activation)
     if st.session_state.get('rnn_training_config') != config:
@@ -193,7 +194,7 @@ def _training():
     st.metric('Held-out test loss',f'{result["loss"]:.5f}')
     st.metric('Held-out '+result['metric_name'],f'{result["metric"]:.5f}')
     if config.task=='forecasting':
-        selected = st.slider('Held-out forecast example',0,len(result['target'])-1,0,key='rnn_forecast_example')
+        selected = st.slider('Held-out forecast example',0,len(result['target'])-1,0,key='rnn_forecast_example', persist_state='session')
         _plot(prediction_figure(result['target'][selected],result['prediction'][selected]),'rnn_test_prediction','Forecast and target over future horizon')
         st.caption('Largest forecast errors (regression has continuous errors, rather than discrete wrong labels).')
         st.dataframe(pd.DataFrame({'example':result['mistakes'].tolist(),'target':result['target'][result['mistakes']].tolist(),'prediction':result['prediction'][result['mistakes']].tolist()}),alt='Largest forecast errors')
@@ -207,12 +208,12 @@ def _training():
 
 
 def _bptt():
-    t = st.slider('BPTT sequence length',2,40,12,key='rnn_bptt_t')
-    gain = st.slider('Recurrent gain',.0,1.8,.5,.1,key='rnn_bptt_gain')
-    activation = st.selectbox('BPTT activation',['tanh','relu'],key='rnn_bptt_activation')
-    chunk = st.slider('Detach chunk size (0 = full BPTT)',0,t,0,key='rnn_bptt_chunk')
-    clip = st.number_input('Clipping threshold',.001,100.,1.,.1,key='rnn_bptt_clip')
-    lr = st.number_input('BPTT SGD learning rate',.0001,1.,.01,.001,key='rnn_bptt_lr')
+    t = st.slider('BPTT sequence length',2,40,12,key='rnn_bptt_t', persist_state='session')
+    gain = st.slider('Recurrent gain',.0,1.8,.5,.1,key='rnn_bptt_gain', persist_state='session')
+    activation = st.selectbox('BPTT activation',['tanh','relu'],key='rnn_bptt_activation', persist_state='session')
+    chunk = st.slider('Detach chunk size (0 = full BPTT)',0,t,0,key='rnn_bptt_chunk', persist_state='session')
+    clip = st.number_input('Clipping threshold',.001,100.,1.,.1,key='rnn_bptt_clip', persist_state='session')
+    lr = st.number_input('BPTT SGD learning rate',.0001,1.,.01,.001,key='rnn_bptt_lr', persist_state='session')
     result = gradient_experiment(t,gain,activation,chunk,clip,lr)
     st.write('Controlled scalar recurrence: h0=0.01, x_t=0.01, W_ih=1, no bias; the trainable recurrent gain is shared. Terminal loss L=h_T isolates the chain product. This diagnostic linear loss is intentionally different from the training task losses.')
     st.latex(r'\frac{\partial L}{\partial h_t}=\frac{\partial L}{\partial h_T}\prod_{k=t+1}^{T}f^{\prime}(z_k)W_{hh};\quad\frac{\partial L}{\partial W_{hh}}=\sum_t\frac{\partial L}{\partial z_t}h_{t-1}^{T}')
@@ -231,8 +232,8 @@ def _bptt():
 
 
 def _variable():
-    raw = st.text_input('Valid lengths (comma-separated)','5,2,4',key='rnn_lengths')
-    hidden = st.slider('Packed hidden size',1,12,3,key='rnn_packed_hidden')
+    raw = st.text_input('Valid lengths (comma-separated)','5,2,4',key='rnn_lengths', persist_state='session')
+    hidden = st.slider('Packed hidden size',1,12,3,key='rnn_packed_hidden', persist_state='session')
     try:result = variable_length_demo(tuple(int(v.strip()) for v in raw.split(',')),hidden)
     except (ValueError,RuntimeError) as exc:st.warning(str(exc));return
     st.code('packed = pack_padded_sequence(x, lengths.cpu(), batch_first=True, enforce_sorted=False)\npacked_output, h_n = rnn(packed)\noutput, lengths = pad_packed_sequence(packed_output, batch_first=True)\nfinal_valid = h_n[-1]',language='python')
@@ -245,7 +246,7 @@ def _variable():
 
 def _progress():
     progress = st.session_state.learning_progress_v1
-    answers = [st.radio(question,options,index=None,key=f'rnn_quiz_{i}') for i,(question,options,_,_) in enumerate(QUESTIONS)]
+    answers = [st.radio(question,options,index=None,key=f'rnn_quiz_{i}', persist_state='session') for i,(question,options,_,_) in enumerate(QUESTIONS)]
     if st.button('Grade RNN quiz',key='rnn_grade'):
         if any(a is None for a in answers):st.warning('Answer every question first.')
         else:
@@ -255,7 +256,7 @@ def _progress():
             for question,_,_,explanation in QUESTIONS:st.caption(question+' — '+explanation)
     for task,expected in EXPERIMENTS:
         st.write(task);st.caption('Expected: '+expected)
-    notes = st.text_area('RNN experiment notes',value=progress.get('exercise_notes',{}).get('rnn',''),key='rnn_notes')
+    notes = st.text_area('RNN experiment notes',value=progress.get('exercise_notes',{}).get('rnn',''),key='rnn_notes', persist_state='session')
     if st.button('Save RNN notes',key='rnn_save_notes'):
         current = st.session_state.learning_progress_v1
         st.session_state.learning_progress_v1 = {**current,'exercise_notes':{**current.get('exercise_notes',{}),'rnn':notes}}
@@ -272,6 +273,9 @@ def _progress():
 def render_rnn_learning_studio():
     st.subheader('Recurrent Neural Network (RNN)')
     st.caption('Explore time, shared parameters, hidden states and learning through real PyTorch execution.')
-    section = st.selectbox('RNN section',SECTIONS,key='rnn_section')
-    renderers = dict(zip(SECTIONS,[_concepts,_cell,lambda:_architecture(True),_architecture,_datasets,_training,_bptt,_variable,_progress]))
-    renderers[section]()
+    for section, tab in render_learning_section_navigation(SECTIONS, 'rnn').items():
+        if not tab.open:
+            continue
+        with tab:
+            renderers = dict(zip(SECTIONS,[_concepts,_cell,lambda:_architecture(True),_architecture,_datasets,_training,_bptt,_variable,_progress]))
+            renderers[section]()

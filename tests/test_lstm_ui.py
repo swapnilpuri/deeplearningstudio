@@ -14,7 +14,8 @@ def start(section):
     app = AppTest.from_file(str(APP),default_timeout=40).run()
     app.radio(key='workspace').set_value('Learning Studio').run()
     app.selectbox(key='learn_lesson').set_value('lstm').run()
-    app.selectbox(key='lstm_section').set_value(section).run()
+    app.session_state['lstm_section'] = section
+    app.run()
     assert not app.exception
     return app
 
@@ -83,12 +84,15 @@ def test_builder_and_experiments():
     app.slider(key='lstm_arch_dropout').set_value(.2).run()
     assert not app.exception
     app.slider(key='lstm_arch_layers').set_value(1).run();assert app.warning and not app.exception
-    app.selectbox(key='lstm_section').set_value('Gate & state laboratory').run()
+    app.session_state['lstm_section'] = 'Gate & state laboratory'
+    app.run()
     app.checkbox(key='lstm_memory_reverse').check()
     app.slider(key='lstm_memory_f').set_value(0.).run();assert not app.exception
-    app.selectbox(key='lstm_section').set_value('BPTT & clipping').run()
+    app.session_state['lstm_section'] = 'BPTT & clipping'
+    app.run()
     app.selectbox(key='lstm_bptt_optimizer').set_value('Adam').run();assert not app.exception
-    app.selectbox(key='lstm_section').set_value('Variable lengths').run()
+    app.session_state['lstm_section'] = 'Variable lengths'
+    app.run()
     app.text_input(key='lstm_lengths').set_value('0,2').run();assert app.warning and not app.exception
 
 

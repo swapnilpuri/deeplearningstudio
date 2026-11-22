@@ -3,6 +3,7 @@ import json
 from dataclasses import replace
 import pandas as pd
 import streamlit as st
+from .navigation import render_learning_section_navigation
 import torch
 from .transformer_spec import TransformerSpec
 from .transformer_adapter import (MultiHeadAttention, TransformerBlock, parameter_counts,
@@ -106,7 +107,7 @@ def _training():
     if run is None:
         st.info('Initial parameters restored. Training runs only on button press.')
         initial = TransformerBlock(spec)
-        name = st.selectbox('Initial parameter',dict(initial.named_parameters()),key='m10_initial_parameter')
+        name = st.selectbox('Initial parameter',dict(initial.named_parameters()),key='m10_initial_parameter', persist_state='session')
         value = dict(initial.named_parameters())[name]
         _tensor(value.reshape(1,-1) if value.ndim == 1 else value,name)
         return
@@ -122,7 +123,7 @@ def _training():
         _tensor(run[stage]['output'][0],stage+' output, sequence 0',labels)
     _tensor(run['X'][0],'Training input, sequence 0',labels)
     _tensor(run['target'][0],'Target, sequence 0',labels)
-    name = st.selectbox('Inspect trained parameter',list(run['initial']),key='m10_parameter')
+    name = st.selectbox('Inspect trained parameter',list(run['initial']),key='m10_parameter', persist_state='session')
     if name is None:
         return
     for title,value in (('Initial',run['initial'][name]),('Trained',run['trained'][name]),
@@ -161,109 +162,112 @@ def _exercises():
 
 def render_transformer_learning_studio():
     st.subheader('Multi-Head Attention & Transformer Blocks')
-    section = st.selectbox('Transformer section',SECTIONS,key='m10_section')
-    index = SECTIONS.index(section)
-    st.write(EXPLANATIONS[index])
-    try:
-        if index == 10:
-            _training()
-            return
-        if index == 11:
-            _exercises()
-            return
-        spec = _configuration()
-        x,mask,labels = _inputs(spec)
-        model = TransformerBlock(spec)
-        with torch.no_grad():
-            trace = model.mha(x,mask)
-            block = model(x,mask)
-        h = st.selectbox('Inspect head',range(spec.num_heads),format_func=lambda h:f'Head {h+1}',key=f'm10_head_{spec.num_heads}')
-        query = st.selectbox('Inspect query token',range(len(labels)),format_func=lambda i:labels[i],key=f'm10_query_{len(labels)}')
-        st.caption(f'Standard mode: X {list(x.shape)}; heads {spec.num_heads}; d_k=d_v={spec.d_head}; '
-                   f'packed Q/K/V each {list(x.shape)}; concatenated {list(trace["concat"].shape)}; output {list(trace["output"].shape)}')
-        _tensor(x[0],'Input embeddings X',labels)
-        if index in (0,1,2):
-            start,end = h*spec.d_head,(h+1)*spec.d_head
-            for name in ('Wq','Wk','Wv'):
-                _tensor(getattr(model.mha,name)[:,start:end],f'{name}, selected head')
-            for name in ('Q','K','V'):
-                _tensor(trace[name][0,h],name+', selected head',labels)
-        if index <= 5:
-            _plot(all_heads_figure(trace['probabilities'][0],labels),'m10_all_heads','All attention head probabilities')
-            _plot(distribution_figure(trace['probabilities'][0,h],labels,query),'m10_distribution','Selected head and query attention')
-            st.dataframe(pd.DataFrame(trace['probabilities'][0,:,query].T.numpy(),index=labels,
-                columns=pd.Index([f'Head {i+1}' for i in range(spec.num_heads)])),alt='Selected token attention across all heads')
-        if index == 3:
-            key = st.selectbox('Inspect key token',range(len(labels)),format_func=lambda i:labels[i],key=f'm10_key_{len(labels)}')
-            q,k = trace['Q'][0,h,query],trace['K'][0,h,key]
-            st.write('Coordinate products:',(q*k).tolist(),'dot product:',float(q@k), 'scaled:',float(trace['scaled_scores'][0,h,query,key]))
-            for name in ('scores','scaled_scores','masked_logits','probabilities'):
-                _tensor(trace[name][0,h],name+', selected head',labels)
-            _tensor(mask.float(),'Visibility: 1 permits, 0 blocks',labels)
-            unmasked = model.mha(x)['probabilities'][0,h]
-            _plot(head_figure(unmasked,labels,'Unmasked selected head'),'m10_unmasked','Unmasked probabilities')
-            _plot(head_figure(trace['probabilities'][0,h],labels,'Masked selected head'),'m10_masked','Masked probabilities')
-            st.write('Row sums:',trace['probabilities'][0,h].sum(-1).tolist())
-        if index == 4:
-            for i in range(spec.num_heads):
-                _tensor(trace['heads'][0,i],f'Head {i+1} output',labels)
-            _tensor(trace['concat'][0],'Concatenated heads',labels)
-            _tensor(model.mha.Wo,'Output projection Wo')
-            _tensor(trace['output'][0],'MHA output',labels)
-        if index == 5:
-            single = MultiHeadAttention(replace(spec,num_heads=1))
-            with torch.no_grad():
-                one = single(x,mask)
-                m9 = self_attention(x[0],dict(Wq=single.Wq,Wk=single.Wk,Wv=single.Wv),mask)
-            st.caption('Both models use identical seeded packed weights and input. Only head splitting and scaling change. M9 context is shown before the added Wo projection.')
-            for name,result,heads in (('Single head',one,1),('Multi-head',trace,spec.num_heads)):
-                _tensor(result['output'][0],name+' projected output',labels)
-                st.write(name,dict(heads=heads,parameters=sum(p.numel() for p in single.parameters()),
-                    **complexity(replace(spec,num_heads=heads),len(labels))))
-            _tensor(m9['output'],'M9 single-head context before Wo',labels)
-            _plot(head_figure(one['probabilities'][0,0],labels,'Single head'),'m10_single','Single-head attention')
-        if index == 6:
-            use = st.checkbox('Include residual connection',True,key='m10_residual')
-            _tensor(trace['output'][0],'Isolated MHA sublayer output',labels)
-            _tensor((residual(x,trace['output']) if use else trace['output'])[0],'Result',labels)
-            st.caption('Element-wise: first token X + sublayer = '+str((x[0,0]+trace['output'][0,0]).tolist()))
-        if index == 7:
-            gamma = st.slider('Demonstration gamma',.0,3.,1.,key='m10_gamma')
-            beta = st.slider('Demonstration beta',-2.,2.,.0,key='m10_beta')
-            with torch.no_grad():
-                model.ln1.weight.fill_(gamma)
-                model.ln1.bias.fill_(beta)
-                norm = layer_norm_trace(x,model.ln1)
-            for name in ('mean','variance','normalized','output'):
-                _tensor(norm[name][0],name,labels)
-            _tensor(norm['gamma'][None],'Learnable gamma')
-            _tensor(norm['beta'][None],'Learnable beta')
-            worked = torch.arange(1,spec.d_model+1,dtype=torch.float32).reshape(1,1,-1)
-            example = layer_norm_trace(worked,model.ln1)
-            st.write('Worked row:',worked.flatten().tolist(),'mean:',float(example['mean'].item()),
-                     'variance (correction=0):',float(example['variance'].item()))
-            _tensor(example['output'][0],'Worked normalized and affine output')
-        if index == 8:
-            with torch.no_grad(): ffn = model.ffn(x)
-            for name in ('linear1','activation','output'):
-                _tensor(ffn[name][0],'FFN '+name,labels)
-            for name,p in model.ffn.named_parameters():
-                _tensor(p[None] if p.ndim == 1 else p,'FFN '+name)
-        if index == 9:
-            st.graphviz_chart(block_diagram(spec.norm),alt=spec.norm+' Transformer block with dashed residual paths')
-            stage = st.selectbox('Forward-pass stage',list(block['stages']),key='m10_stage')
-            if stage is None:
-                return
-            operations = dict(X='Input embeddings',LN1='LN1(X)',MHA='Multi-head self-attention',
-                residual1='X + MHA(X)',U='First residual result (normalized in post-norm)',
-                LN2='LN2(U)',FFN='Linear2(Activation(Linear1(input)))',
-                residual2='U + FFN(U)',Y='Final residual result (normalized in post-norm)')
-            st.write('Operation:',operations[stage])
-            st.caption(f'All block stages consume and return [batch, tokens, d_model] = {list(x.shape)}. FFN internal width is {spec.d_ff}.')
-            _tensor(block['stages'][stage][0],stage+' numerical output',labels)
-            st.dataframe(pd.DataFrame([dict(stage=k,operation=operations[k],shape=str(list(v.shape)),
-                sample=str(v.flatten()[:4].tolist())) for k,v in block['stages'].items()]),alt='Transformer stage operations, shapes and samples')
-            _plot(all_heads_figure(block['mha']['probabilities'][0],labels),'m10_block_heads','Actual Transformer block attention')
-        _parameters(model,len(labels))
-    except (ValueError,TypeError,KeyError,IndexError,RuntimeError) as exc:
-        st.warning(f'Check Transformer inputs: {exc}')
+    for section, tab in render_learning_section_navigation(SECTIONS, 'm10').items():
+        if not tab.open:
+            continue
+        with tab:
+            index = SECTIONS.index(section)
+            st.write(EXPLANATIONS[index])
+            try:
+                if index == 10:
+                    _training()
+                    return
+                if index == 11:
+                    _exercises()
+                    return
+                spec = _configuration()
+                x,mask,labels = _inputs(spec)
+                model = TransformerBlock(spec)
+                with torch.no_grad():
+                    trace = model.mha(x,mask)
+                    block = model(x,mask)
+                h = st.selectbox('Inspect head',range(spec.num_heads),format_func=lambda h:f'Head {h+1}',key=f'm10_head_{spec.num_heads}', persist_state='session')
+                query = st.selectbox('Inspect query token',range(len(labels)),format_func=lambda i:labels[i],key=f'm10_query_{len(labels)}', persist_state='session')
+                st.caption(f'Standard mode: X {list(x.shape)}; heads {spec.num_heads}; d_k=d_v={spec.d_head}; '
+                           f'packed Q/K/V each {list(x.shape)}; concatenated {list(trace["concat"].shape)}; output {list(trace["output"].shape)}')
+                _tensor(x[0],'Input embeddings X',labels)
+                if index in (0,1,2):
+                    start,end = h*spec.d_head,(h+1)*spec.d_head
+                    for name in ('Wq','Wk','Wv'):
+                        _tensor(getattr(model.mha,name)[:,start:end],f'{name}, selected head')
+                    for name in ('Q','K','V'):
+                        _tensor(trace[name][0,h],name+', selected head',labels)
+                if index <= 5:
+                    _plot(all_heads_figure(trace['probabilities'][0],labels),'m10_all_heads','All attention head probabilities')
+                    _plot(distribution_figure(trace['probabilities'][0,h],labels,query),'m10_distribution','Selected head and query attention')
+                    st.dataframe(pd.DataFrame(trace['probabilities'][0,:,query].T.numpy(),index=labels,
+                        columns=pd.Index([f'Head {i+1}' for i in range(spec.num_heads)])),alt='Selected token attention across all heads')
+                if index == 3:
+                    key = st.selectbox('Inspect key token',range(len(labels)),format_func=lambda i:labels[i],key=f'm10_key_{len(labels)}', persist_state='session')
+                    q,k = trace['Q'][0,h,query],trace['K'][0,h,key]
+                    st.write('Coordinate products:',(q*k).tolist(),'dot product:',float(q@k), 'scaled:',float(trace['scaled_scores'][0,h,query,key]))
+                    for name in ('scores','scaled_scores','masked_logits','probabilities'):
+                        _tensor(trace[name][0,h],name+', selected head',labels)
+                    _tensor(mask.float(),'Visibility: 1 permits, 0 blocks',labels)
+                    unmasked = model.mha(x)['probabilities'][0,h]
+                    _plot(head_figure(unmasked,labels,'Unmasked selected head'),'m10_unmasked','Unmasked probabilities')
+                    _plot(head_figure(trace['probabilities'][0,h],labels,'Masked selected head'),'m10_masked','Masked probabilities')
+                    st.write('Row sums:',trace['probabilities'][0,h].sum(-1).tolist())
+                if index == 4:
+                    for i in range(spec.num_heads):
+                        _tensor(trace['heads'][0,i],f'Head {i+1} output',labels)
+                    _tensor(trace['concat'][0],'Concatenated heads',labels)
+                    _tensor(model.mha.Wo,'Output projection Wo')
+                    _tensor(trace['output'][0],'MHA output',labels)
+                if index == 5:
+                    single = MultiHeadAttention(replace(spec,num_heads=1))
+                    with torch.no_grad():
+                        one = single(x,mask)
+                        m9 = self_attention(x[0],dict(Wq=single.Wq,Wk=single.Wk,Wv=single.Wv),mask)
+                    st.caption('Both models use identical seeded packed weights and input. Only head splitting and scaling change. M9 context is shown before the added Wo projection.')
+                    for name,result,heads in (('Single head',one,1),('Multi-head',trace,spec.num_heads)):
+                        _tensor(result['output'][0],name+' projected output',labels)
+                        st.write(name,dict(heads=heads,parameters=sum(p.numel() for p in single.parameters()),
+                            **complexity(replace(spec,num_heads=heads),len(labels))))
+                    _tensor(m9['output'],'M9 single-head context before Wo',labels)
+                    _plot(head_figure(one['probabilities'][0,0],labels,'Single head'),'m10_single','Single-head attention')
+                if index == 6:
+                    use = st.checkbox('Include residual connection',True,key='m10_residual', persist_state='session')
+                    _tensor(trace['output'][0],'Isolated MHA sublayer output',labels)
+                    _tensor((residual(x,trace['output']) if use else trace['output'])[0],'Result',labels)
+                    st.caption('Element-wise: first token X + sublayer = '+str((x[0,0]+trace['output'][0,0]).tolist()))
+                if index == 7:
+                    gamma = st.slider('Demonstration gamma',.0,3.,1.,key='m10_gamma', persist_state='session')
+                    beta = st.slider('Demonstration beta',-2.,2.,.0,key='m10_beta', persist_state='session')
+                    with torch.no_grad():
+                        model.ln1.weight.fill_(gamma)
+                        model.ln1.bias.fill_(beta)
+                        norm = layer_norm_trace(x,model.ln1)
+                    for name in ('mean','variance','normalized','output'):
+                        _tensor(norm[name][0],name,labels)
+                    _tensor(norm['gamma'][None],'Learnable gamma')
+                    _tensor(norm['beta'][None],'Learnable beta')
+                    worked = torch.arange(1,spec.d_model+1,dtype=torch.float32).reshape(1,1,-1)
+                    example = layer_norm_trace(worked,model.ln1)
+                    st.write('Worked row:',worked.flatten().tolist(),'mean:',float(example['mean'].item()),
+                             'variance (correction=0):',float(example['variance'].item()))
+                    _tensor(example['output'][0],'Worked normalized and affine output')
+                if index == 8:
+                    with torch.no_grad(): ffn = model.ffn(x)
+                    for name in ('linear1','activation','output'):
+                        _tensor(ffn[name][0],'FFN '+name,labels)
+                    for name,p in model.ffn.named_parameters():
+                        _tensor(p[None] if p.ndim == 1 else p,'FFN '+name)
+                if index == 9:
+                    st.graphviz_chart(block_diagram(spec.norm),alt=spec.norm+' Transformer block with dashed residual paths')
+                    stage = st.selectbox('Forward-pass stage',list(block['stages']),key='m10_stage', persist_state='session')
+                    if stage is None:
+                        return
+                    operations = dict(X='Input embeddings',LN1='LN1(X)',MHA='Multi-head self-attention',
+                        residual1='X + MHA(X)',U='First residual result (normalized in post-norm)',
+                        LN2='LN2(U)',FFN='Linear2(Activation(Linear1(input)))',
+                        residual2='U + FFN(U)',Y='Final residual result (normalized in post-norm)')
+                    st.write('Operation:',operations[stage])
+                    st.caption(f'All block stages consume and return [batch, tokens, d_model] = {list(x.shape)}. FFN internal width is {spec.d_ff}.')
+                    _tensor(block['stages'][stage][0],stage+' numerical output',labels)
+                    st.dataframe(pd.DataFrame([dict(stage=k,operation=operations[k],shape=str(list(v.shape)),
+                        sample=str(v.flatten()[:4].tolist())) for k,v in block['stages'].items()]),alt='Transformer stage operations, shapes and samples')
+                    _plot(all_heads_figure(block['mha']['probabilities'][0],labels),'m10_block_heads','Actual Transformer block attention')
+                _parameters(model,len(labels))
+            except (ValueError,TypeError,KeyError,IndexError,RuntimeError) as exc:
+                st.warning(f'Check Transformer inputs: {exc}')

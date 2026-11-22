@@ -3,6 +3,7 @@ import json
 import numpy as np
 import plotly.express as px
 import streamlit as st
+from .navigation import render_learning_section_navigation
 import torch
 from .cnn_spec import CNNLayerSpec, CNNModelSpec, digits_spec, output_axis
 from .cnn_adapter import CNNAdapter, convolution_explorer, pooling_explorer, filter_presets, single_sgd_step, convolution_gradient_check
@@ -31,14 +32,14 @@ def _position(label, count, key):
     if count == 1:
         st.caption(f'{label}: 0 (only position)')
         return 0
-    return st.slider(label,0,count-1,0,key=f'{key}_{count}')
+    return st.slider(label,0,count-1,0,key=f'{key}_{count}', persist_state='session')
 
 
 def _progress_panel(progress):
     st.subheader('Quiz & guided experiments')
     answers=[]
     for i,(question,options,_,_) in enumerate(QUESTIONS):
-        answers.append(st.radio(question,options,index=None,key=f'cnn_question_{i}'))
+        answers.append(st.radio(question,options,index=None,key=f'cnn_question_{i}', persist_state='session'))
     if st.button('Grade CNN quiz'):
         if any(a is None for a in answers): st.warning('Answer all questions first.')
         else:
@@ -49,7 +50,7 @@ def _progress_panel(progress):
     for task,expected in EXPERIMENTS:
         st.write(task)
         st.caption('Expected observation: '+expected)
-    notes=st.text_area('Your observations',value=progress.get('exercise_notes',{}).get('cnn',''),key='cnn_notes')
+    notes=st.text_area('Your observations',value=progress.get('exercise_notes',{}).get('cnn',''),key='cnn_notes', persist_state='session')
     if st.button('Save CNN notes'):
         st.session_state.learning_progress_v1={**progress,'exercise_notes':{**progress.get('exercise_notes',{}),'cnn':notes}}
         st.success('Saved in session; export to persist.')
@@ -66,21 +67,21 @@ def _progress_panel(progress):
 def _convolution_tab():
     st.markdown('**Conv2d uses cross-correlation (kernel not flipped).** Move the output position to see the exact window and its products.')
     c1,c2,c3,c4=st.columns(4)
-    with c1:height=st.slider('Image height',4,12,6,key='cnn_img_height')
-    with c2:channels=st.selectbox('Input channels',[1,3],key='cnn_in_channels')
-    with c3:k=st.slider('Kernel size',1,5,3,key='cnn_kernel')
-    with c4:nfilters=st.slider('Output filters',1,8,2,key='cnn_filters')
-    width=st.slider('Image width',4,12,6,key='cnn_img_width')
-    kw=st.slider('Kernel width',1,5,k,key='cnn_kernel_width')
-    dilation=st.slider('Dilation',1,3,1,key='cnn_dilation')
+    with c1:height=st.slider('Image height',4,12,6,key='cnn_img_height', persist_state='session')
+    with c2:channels=st.selectbox('Input channels',[1,3],key='cnn_in_channels', persist_state='session')
+    with c3:k=st.slider('Kernel size',1,5,3,key='cnn_kernel', persist_state='session')
+    with c4:nfilters=st.slider('Output filters',1,8,2,key='cnn_filters', persist_state='session')
+    width=st.slider('Image width',4,12,6,key='cnn_img_width', persist_state='session')
+    kw=st.slider('Kernel width',1,5,k,key='cnn_kernel_width', persist_state='session')
+    dilation=st.slider('Dilation',1,3,1,key='cnn_dilation', persist_state='session')
     c1,c2,c3,c4=st.columns(4)
-    with c1:stride=st.slider('Stride',1,3,1,key='cnn_stride')
-    with c2:padding=st.slider('Padding',0,3,1,key='cnn_padding')
-    with c3:use_bias=st.checkbox('Use bias',True,key='cnn_use_bias')
-    with c4:activation=st.selectbox('Activation',['None','ReLU'],key='cnn_activation')
-    bias_value=st.number_input('Bias per filter',value=0.0,key='cnn_bias_value')
-    preset=st.selectbox('Kernel', ['Vertical edge','Horizontal edge','Identity','Blur','Sharpen','Custom seeded'],key='cnn_filter_preset')
-    seed=st.number_input('Explorer seed',min_value=0,max_value=100000,value=42,key='cnn_explorer_seed')
+    with c1:stride=st.slider('Stride',1,3,1,key='cnn_stride', persist_state='session')
+    with c2:padding=st.slider('Padding',0,3,1,key='cnn_padding', persist_state='session')
+    with c3:use_bias=st.checkbox('Use bias',True,key='cnn_use_bias', persist_state='session')
+    with c4:activation=st.selectbox('Activation',['None','ReLU'],key='cnn_activation', persist_state='session')
+    bias_value=st.number_input('Bias per filter',value=0.0,key='cnn_bias_value', persist_state='session')
+    preset=st.selectbox('Kernel', ['Vertical edge','Horizontal edge','Identity','Blur','Sharpen','Custom seeded'],key='cnn_filter_preset', persist_state='session')
+    seed=st.number_input('Explorer seed',min_value=0,max_value=100000,value=42,key='cnn_explorer_seed', persist_state='session')
     with torch.random.fork_rng(devices=[]):
         torch.manual_seed(int(seed))
         x=torch.arange(1,height*width*channels+1,dtype=torch.float32).reshape(channels,height,width)/height
@@ -96,8 +97,8 @@ def _convolution_tab():
         weights[f,c]=kernel
     if preset!='Custom seeded' and (k,kw)!=(3,3):
         st.caption('Named presets require 3×3 kernels; seeded weights are shown for other sizes.')
-    edit_filter=st.selectbox('Filter weights to edit',list(range(nfilters)),key='cnn_edit_filter')
-    edit_channel=st.selectbox('Kernel input channel to edit',list(range(channels)),key='cnn_edit_channel')
+    edit_filter=st.selectbox('Filter weights to edit',list(range(nfilters)),key='cnn_edit_filter', persist_state='session')
+    edit_channel=st.selectbox('Kernel input channel to edit',list(range(channels)),key='cnn_edit_channel', persist_state='session')
     edited=st.data_editor(weights[edit_filter,edit_channel].numpy(),key=f'cnn_weights_{seed}_{preset}_{k}_{kw}_{channels}_{nfilters}_{edit_filter}_{edit_channel}')
     if not np.isfinite(edited).all():
         st.warning('Kernel weights must be finite.')
@@ -109,8 +110,8 @@ def _convolution_tab():
         out_width=output_axis(width,kw,stride,padding,dilation)
         if out_shape<1:raise ValueError('Kernel larger than padded input')
         ci,cf=st.columns(2)
-        with ci:fil=st.selectbox('Output filter index',list(range(nfilters)),key='cnn_filter_index')
-        with cf:channel=st.selectbox('Input channel to inspect',list(range(channels)),key='cnn_channel_index')
+        with ci:fil=st.selectbox('Output filter index',list(range(nfilters)),key='cnn_filter_index', persist_state='session')
+        with cf:channel=st.selectbox('Input channel to inspect',list(range(channels)),key='cnn_channel_index', persist_state='session')
         row=_position('Output row',out_shape,'cnn_conv_row')
         col=_position('Output column',out_width,'cnn_conv_col')
         result=convolution_explorer(x,weights,bias,stride,padding,activation,row,col,fil,dilation)
@@ -136,10 +137,10 @@ def _convolution_tab():
 
 def _pool_tab():
     st.write('Pooling operates independently on each feature-map channel. This example uses one 2D feature map.')
-    kind=st.selectbox('Pooling mode',['max','average'],key='cnn_pool_kind')
-    size=st.slider('Feature-map width/height',4,12,6,key='cnn_pool_size')
-    k=st.slider('Pool kernel',1,4,2,key='cnn_pool_k')
-    stride=st.slider('Pool stride',1,4,2,key='cnn_pool_stride')
+    kind=st.selectbox('Pooling mode',['max','average'],key='cnn_pool_kind', persist_state='session')
+    size=st.slider('Feature-map width/height',4,12,6,key='cnn_pool_size', persist_state='session')
+    k=st.slider('Pool kernel',1,4,2,key='cnn_pool_k', persist_state='session')
+    stride=st.slider('Pool stride',1,4,2,key='cnn_pool_stride', persist_state='session')
     fmap=torch.arange(1,size*size+1,dtype=torch.float32).reshape(size,size)
     try:
         dims=output_axis(size,k,stride)
@@ -158,15 +159,15 @@ def _pool_tab():
 
 def _architecture_tab():
     st.write('Construct convolution blocks and a classification head. The dense input size is inferred from tensor shapes.')
-    size=st.selectbox('Square image size',[8,12,16,28],key='cnn_arch_size')
-    channels=st.selectbox('Input channels',[1,3],key='cnn_arch_channels')
-    blocks=st.slider('Convolution blocks',1,3,2,key='cnn_arch_blocks')
-    filters=[st.slider(f'Block {i+1} output filters',1,32,8*(i+1),key=f'cnn_arch_f{i}') for i in range(blocks)]
-    hidden=st.multiselect('Dense hidden widths (in selected order)',[16,32,64,128],key='cnn_arch_hidden')
-    k=st.slider('Convolution kernel',1,5,3,key='cnn_arch_kernel')
-    pad=st.slider('Conv padding',0,2,1,key='cnn_arch_pad')
-    pool='maxpool2d' if st.selectbox('Pooling',['maxpool2d','avgpool2d'],key='cnn_arch_pool')=='maxpool2d' else 'avgpool2d'
-    classes=st.slider('Class logits',2,20,10,key='cnn_arch_classes')
+    size=st.selectbox('Square image size',[8,12,16,28],key='cnn_arch_size', persist_state='session')
+    channels=st.selectbox('Input channels',[1,3],key='cnn_arch_channels', persist_state='session')
+    blocks=st.slider('Convolution blocks',1,3,2,key='cnn_arch_blocks', persist_state='session')
+    filters=[st.slider(f'Block {i+1} output filters',1,32,8*(i+1),key=f'cnn_arch_f{i}', persist_state='session') for i in range(blocks)]
+    hidden=st.multiselect('Dense hidden widths (in selected order)',[16,32,64,128],key='cnn_arch_hidden', persist_state='session')
+    k=st.slider('Convolution kernel',1,5,3,key='cnn_arch_kernel', persist_state='session')
+    pad=st.slider('Conv padding',0,2,1,key='cnn_arch_pad', persist_state='session')
+    pool='maxpool2d' if st.selectbox('Pooling',['maxpool2d','avgpool2d'],key='cnn_arch_pool', persist_state='session')=='maxpool2d' else 'avgpool2d'
+    classes=st.slider('Class logits',2,20,10,key='cnn_arch_classes', persist_state='session')
     try:
         layers=[]
         for filters_out in filters:
@@ -183,10 +184,10 @@ def _architecture_tab():
         _,steps=CNNAdapter().trace(spec)
         st.write('Actual PyTorch layer outputs')
         st.dataframe([{'operator':s['operator'],'shape':s['shape']} for s in steps],hide_index=True)
-        selected=st.selectbox('Inspect forward tensor',list(range(len(steps))),format_func=lambda i:f'{i}: {steps[i]["operator"]}',key='cnn_trace_step')
+        selected=st.selectbox('Inspect forward tensor',list(range(len(steps))),format_func=lambda i:f'{i}: {steps[i]["operator"]}',key='cnn_trace_step', persist_state='session')
         tensor=steps[selected]['tensor'][0]
         if tensor.ndim==3:
-            channel=st.selectbox('Trace channel',list(range(tensor.shape[0])),key='cnn_trace_channel')
+            channel=st.selectbox('Trace channel',list(range(tensor.shape[0])),key='cnn_trace_channel', persist_state='session')
             st.plotly_chart(heatmap(tensor[channel].numpy(),'Actual forward values'),width='stretch')
         else:
             st.write('Forward values',tensor.tolist())
@@ -197,8 +198,8 @@ def _architecture_tab():
 
 def _backprop_tab():
     st.write('Follow logits → CrossEntropyLoss → backward → parameter gradients → optimizer.step → new loss.')
-    optimizer=st.selectbox('One-step optimizer',['SGD','Adam'],key='cnn_back_optimizer')
-    lr=st.select_slider('One-step learning rate',options=[.0001,.001,.01,.05,.1],value=.01,key='cnn_back_lr')
+    optimizer=st.selectbox('One-step optimizer',['SGD','Adam'],key='cnn_back_optimizer', persist_state='session')
+    lr=st.select_slider('One-step learning rate',options=[.0001,.001,.01,.05,.1],value=.01,key='cnn_back_lr', persist_state='session')
     spec=digits_spec()
     x=torch.arange(64,dtype=torch.float32).reshape(1,1,8,8)/63
     result=single_sgd_step(spec,x,torch.tensor([3]),lr,optimizer)
@@ -208,7 +209,7 @@ def _backprop_tab():
     a,b=st.columns(2)
     a.metric('Loss before',f"{result['loss_before']:.6f}")
     b.metric('Loss after',f"{result['loss_after']:.6f}")
-    name=st.selectbox('Inspect parameter',list(result['parameters']),key='cnn_backward_parameter')
+    name=st.selectbox('Inspect parameter',list(result['parameters']),key='cnn_backward_parameter', persist_state='session')
     p=result['parameters'][name]
     st.metric('Gradient L2 norm',f"{p['gradient_norm']:.6f}")
     data=[{'before':float(old),'dLoss/dW':float(grad),'after update':float(new)} for old,grad,new in zip(
@@ -223,15 +224,15 @@ def _backprop_tab():
 def _training_tab():
     st.write('Train a real CNN using Digits (8×8); validation is used for monitoring, test is evaluated only when explicitly requested.')
     a,b,c,d=st.columns(4)
-    with a:epochs=st.slider('Epochs',1,30,5,key='cnn_epochs')
-    with b:batch=st.selectbox('Batch size',[16,32,64,128],index=1,key='cnn_batch')
-    with c:opt=st.selectbox('Optimizer',['Adam','SGD'],key='cnn_opt')
-    with d:lr=st.select_slider('Learning rate',options=[.0001,.0003,.001,.003,.01,.03,.1],value=.01,key='cnn_train_lr')
+    with a:epochs=st.slider('Epochs',1,30,5,key='cnn_epochs', persist_state='session')
+    with b:batch=st.selectbox('Batch size',[16,32,64,128],index=1,key='cnn_batch', persist_state='session')
+    with c:opt=st.selectbox('Optimizer',['Adam','SGD'],key='cnn_opt', persist_state='session')
+    with d:lr=st.select_slider('Learning rate',options=[.0001,.0003,.001,.003,.01,.03,.1],value=.01,key='cnn_train_lr', persist_state='session')
     a,b,c=st.columns(3)
-    with a:filters1=st.slider('First filters',2,16,8,key='cnn_train_f1')
-    with b:filters2=st.slider('Second filters',2,32,16,key='cnn_train_f2')
-    with c:pool=st.selectbox('Pooling style',['maxpool2d','avgpool2d'],key='cnn_train_pool')
-    seed=st.number_input('Training seed',min_value=0,max_value=2147483647,value=42,key='cnn_training_seed')
+    with a:filters1=st.slider('First filters',2,16,8,key='cnn_train_f1', persist_state='session')
+    with b:filters2=st.slider('Second filters',2,32,16,key='cnn_train_f2', persist_state='session')
+    with c:pool=st.selectbox('Pooling style',['maxpool2d','avgpool2d'],key='cnn_train_pool', persist_state='session')
+    seed=st.number_input('Training seed',min_value=0,max_value=2147483647,value=42,key='cnn_training_seed', persist_state='session')
     cfg=CNNTrainingConfig(epochs,batch,lr,opt,int(seed),filters1,filters2,pool)
     if st.session_state.get('cnn_experiment_config')!=cfg:
         st.session_state.pop('cnn_experiment',None)
@@ -248,7 +249,7 @@ def _training_tab():
     st.plotly_chart(px.line(hist,x='epoch',y=['train_loss','val_loss'],title='Train / validation loss'),width="stretch")
     st.plotly_chart(px.line(hist,x='epoch',y=['train_accuracy','val_accuracy'],title='Train / validation accuracy'),width="stretch")
     st.plotly_chart(px.line(hist,x='epoch',y='conv_gradient_norm',title='Convolution gradient norms'),width="stretch")
-    p=st.selectbox('Compare convolution filters',list(exp['initial_filters']),key='cnn_compare_filter')
+    p=st.selectbox('Compare convolution filters',list(exp['initial_filters']),key='cnn_compare_filter', persist_state='session')
     old=exp['initial_filters'][p];new=exp['trained_filters'][p]
     st.write(f'Parameter: {p} — {tuple(old.shape)}. Showing output filter 0 and input channel 0.')
     a,b=st.columns(2)
@@ -277,19 +278,22 @@ def render_cnn_learning_studio():
         st.session_state.learning_progress_v1=empty_progress()
     progress=st.session_state.learning_progress_v1
     st.info('Explore real PyTorch image tensors, cross-correlation, pooling, CNN shape propagation, Digits training and backpropagation.')
-    section=st.selectbox('CNN section',['Concepts & mathematics','Convolution explorer','Pooling explorer','CNN architecture','Backpropagation','Training laboratory','Quiz & progress'],key='cnn_section')
-    if section=='Concepts & mathematics':
-        st.latex(r'Y[n,o,i,j]=b[o]+\sum_c\sum_u\sum_v W[o,c,u,v]X_{padded}[n,c,iS_h+uD_h,jS_w+vD_w]')
-        st.latex(r'H_{out}=\lfloor(H_{in}+2P-D(K-1)-1)/S+1\rfloor')
-        st.latex(r'\mathrm{params}=C_{out}(C_{in}K_hK_w+\mathrm{bias\_enabled})')
-        st.caption('H_in/W_in: input height/width; P: padding; D: dilation; K: kernel size; S: stride. Parameter formula assumes standard ungrouped convolution.')
-        st.latex(r'W_{out}=\lfloor(W_{in}+2P_w-D_w(K_w-1)-1)/S_w+1\rfloor')
-        st.write('Example: RGB → 4 filters, 3×3, bias: 4×(3×3×3+1)=112 parameters. [1,3,8,8] → [1,4,6,6] at stride 1, padding 0.')
-        for title,body in TOPICS:
-            with st.expander(title,expanded=title=='Image tensors'):st.write(body)
-    elif section=='Convolution explorer':_convolution_tab()
-    elif section=='Pooling explorer':_pool_tab()
-    elif section=='CNN architecture':_architecture_tab()
-    elif section=='Backpropagation':_backprop_tab()
-    elif section=='Training laboratory':_training_tab()
-    else:_progress_panel(progress)
+    for section, tab in render_learning_section_navigation(['Concepts & mathematics','Convolution explorer','Pooling explorer','CNN architecture','Backpropagation','Training laboratory','Quiz & progress'], 'cnn').items():
+        if not tab.open:
+            continue
+        with tab:
+            if section=='Concepts & mathematics':
+                st.latex(r'Y[n,o,i,j]=b[o]+\sum_c\sum_u\sum_v W[o,c,u,v]X_{padded}[n,c,iS_h+uD_h,jS_w+vD_w]')
+                st.latex(r'H_{out}=\lfloor(H_{in}+2P-D(K-1)-1)/S+1\rfloor')
+                st.latex(r'\mathrm{params}=C_{out}(C_{in}K_hK_w+\mathrm{bias\_enabled})')
+                st.caption('H_in/W_in: input height/width; P: padding; D: dilation; K: kernel size; S: stride. Parameter formula assumes standard ungrouped convolution.')
+                st.latex(r'W_{out}=\lfloor(W_{in}+2P_w-D_w(K_w-1)-1)/S_w+1\rfloor')
+                st.write('Example: RGB → 4 filters, 3×3, bias: 4×(3×3×3+1)=112 parameters. [1,3,8,8] → [1,4,6,6] at stride 1, padding 0.')
+                for title,body in TOPICS:
+                    with st.expander(title,expanded=title=='Image tensors'):st.write(body)
+            elif section=='Convolution explorer':_convolution_tab()
+            elif section=='Pooling explorer':_pool_tab()
+            elif section=='CNN architecture':_architecture_tab()
+            elif section=='Backpropagation':_backprop_tab()
+            elif section=='Training laboratory':_training_tab()
+            else:_progress_panel(progress)

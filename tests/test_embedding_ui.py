@@ -14,7 +14,8 @@ def start(section):
     app = AppTest.from_file(str(APP),default_timeout=45).run()
     app.radio(key='workspace').set_value('Learning Studio').run()
     app.selectbox(key='learn_lesson').set_value('embedding').run()
-    app.selectbox(key='emb_section').set_value(section).run()
+    app.session_state['emb_section'] = section
+    app.run()
     assert not app.exception and not app.warning
     return app
 
@@ -31,7 +32,8 @@ def test_concepts_and_tokenization_unknown_empty_character():
         assert len(topic)==7 and all(topic)
         app.selectbox(key='emb_topic').set_value(i).run()
         assert not app.exception and not app.warning
-    app.selectbox(key='emb_section').set_value('Tokenization & vocabulary').run()
+    app.session_state['emb_section'] = 'Tokenization & vocabulary'
+    app.run()
     app.text_area(key='emb_text').set_value('').run()
     app.selectbox(key='emb_tokenizer').set_value('character').run()
     app.selectbox(key='emb_vocab_source').set_value('Custom corpus').run()
@@ -46,7 +48,8 @@ def test_matrix_custom_validation_and_gradient_optimizers():
     editor.set_value('invalid').run();assert app.warning and not app.exception
     app.checkbox(key='emb_custom').uncheck().run()
     app.text_input[0].set_value('-1').run();assert app.warning and not app.exception
-    app.selectbox(key='emb_section').set_value('Gradients & updates').run()
+    app.session_state['emb_section'] = 'Gradients & updates'
+    app.run()
     app.selectbox(key='emb_grad_optimizer').set_value('Adam').run()
     assert not app.exception and not app.warning
 
@@ -59,16 +62,19 @@ def test_word_training_retrieval_pooling_and_invalidation():
     assert 'emb_word_run' in app.session_state and not app.exception and not app.warning
     app.selectbox(key='emb_space_axes').set_value(3).run()
     assert not app.exception and not app.warning
-    app.selectbox(key='emb_section').set_value('Similarity & retrieval').run()
+    app.session_state['emb_section'] = 'Similarity & retrieval'
+    app.run()
     app.selectbox(key='emb_sim_source').set_value('Trained skip-gram').run()
     app.selectbox(key='emb_metric').set_value('dot')
     app.checkbox(key='emb_retrieval_normalize').check().run()
     assert not app.exception and not app.warning
-    app.selectbox(key='emb_section').set_value('Sentence pooling').run()
+    app.session_state['emb_section'] = 'Sentence pooling'
+    app.run()
     app.text_input(key='emb_sentence_a').set_value('')
     app.selectbox(key='emb_pooling').set_value('max').run()
     assert not app.exception and not app.warning
-    app.selectbox(key='emb_section').set_value('Word embedding training').run()
+    app.session_state['emb_section'] = 'Word embedding training'
+    app.run()
     app.number_input(key='emb_word_seed').set_value(9).run()
     assert 'emb_word_run' not in app.session_state
 
@@ -79,7 +85,8 @@ def test_positions_builder_validation_and_serialized_spec():
     app.slider(key='emb_pos_dim').set_value(1)
     app.checkbox(key='emb_reverse').check().run()
     assert not app.exception and not app.warning
-    app.selectbox(key='emb_section').set_value('Architecture builder').run()
+    app.session_state['emb_section'] = 'Architecture builder'
+    app.run()
     app.selectbox(key='emb_arch_pos').set_value('learned')
     app.slider(key='emb_arch_max').set_value(1).run()
     assert app.warning and not app.exception
