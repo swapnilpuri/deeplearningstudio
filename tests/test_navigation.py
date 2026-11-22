@@ -10,6 +10,7 @@ from learning.embedding_ui import SECTIONS as EMBEDDING
 from learning.lstm_ui import SECTIONS as LSTM
 from learning.rnn_ui import SECTIONS as RNN
 from learning.transformer_content import SECTIONS as TRANSFORMER
+from learning.seq2seq_content import SECTIONS as SEQ2SEQ
 
 APP = Path(__file__).resolve().parents[1] / 'app.py'
 CNN = ['Concepts & mathematics', 'Convolution explorer', 'Pooling explorer',
@@ -30,7 +31,7 @@ def start(lesson):
     return app
 
 
-@pytest.mark.parametrize('lesson,prefix,sections', MODULES)
+@pytest.mark.parametrize('lesson,prefix,sections', MODULES + [('seq2seq', 'm11', SEQ2SEQ)])
 def test_all_learning_paths_have_ordered_native_tabs(lesson, prefix, sections, monkeypatch):
     import importlib
 
