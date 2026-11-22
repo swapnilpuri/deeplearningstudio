@@ -1,7 +1,7 @@
 # M8 handoff
 
-Status: implementation and automated/runtime verification passed;
-browser/manual and independent acceptance pending. Date: 2026-11-21.
+Status: implementation, automated/runtime verification and core browser acceptance
+passed; independent acceptance pending. Date: 2026-11-21.
 Branch: feature/m8-embedding-learning-studio.
 Starting commit: dd878cac84c789ce14c17eb6061e32ec220baf6a, clean master,
 M7 merge confirmed; remote master matched via git ls-remote deeplearningstudio.
@@ -42,18 +42,32 @@ or tracebacks. One-epoch classifier test CE 0.762522, accuracy 0.470588;
 workflow evidence only. Separate one-epoch seeds 42/43 changed cat neighbors and
 both produced finite embeddings; no general semantic/stability claim.
 
-Browser helper inspection confirmed the dedicated Edge window still showed the
-older local app on port 8767. Setting its address timed out; reobservation confirmed
-no navigation occurred. Recovery enumeration/state capture succeeded after retries,
-but keyboard action failed to activate the captured window. No M8 browser rendering
-or browser interaction pass is claimed. The user's existing server was not stopped.
-No known failing source test; visual/manual review, file roundtrip in browser,
-fresh install, Netron and independent review remain unexecuted.
+The earlier port-8767 browser limitation was superseded by user-authorized browser
+acceptance in dedicated single-tab Edge at http://localhost:8501 on 2026-11-21,
+dark theme, 80% zoom. All twelve sections exercised with native UI/screenshot
+inspection. Verified word/character tokenizer, custom matrix JSON and exact lookup
+equality, SGD/Adam and finite-difference display, similarity inputs/normalization,
+five-epoch skip-gram and initial/trained 2D/3D PCA, empty max sentence pooling,
+learned/sinusoidal D=5 position modes and reversal, builder shape graph/counts and
+learned-position increase 58→106, actual schema-v5 spec download, five-epoch
+classifier training and explicit held-out test (CE 0.596323, accuracy 0.647059,
+confusion [[4,3],[3,7]] and predictions), evaluation screen, full 21/21 quiz,
+notes, completion and actual browser progress export/upload/load/re-export.
+Read back task downloads: spec matches controls; progress JSON before/after import
+is exactly equal with score, completion and saved notes intact. No app defect
+identified; user server remains running. Details: M8_COMPLETION_REPORT.md.
 
-Highest-priority next task: browser/manual M8 acceptance with a working browser
-automation connection, then independent architecture/education review and PR review.
-Do not merge automatically. Implementation is verified, milestone acceptance is
-conditional on those outstanding checks. See M8_ACCEPTANCE_CRITERIA.md.
+Browser coverage limits: Direct-mode plots, t-SNE, deliberate hover/rotation,
+all invalid-input/control variants and legacy M4–M7 JSON import were not exercised
+in this browser session (applicable numerical/headless/runtime checks already
+passed). Fresh install, Netron and independent review remain unexecuted. Native
+automation needed reobservation/scrolling and keyboard selection for clipped menu
+options; no source fix was required. No new code since the 253-test regression.
+
+Highest-priority next task: independent architecture/education acceptance and PR
+review; optionally extend browser variants listed above. Do not merge automatically.
+Implementation and core browser acceptance passed; milestone sign-off still awaits
+independent review. See M8_ACCEPTANCE_CRITERIA.md.
 
 Resume commands (repository root):
 `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests/test_embedding.py`;

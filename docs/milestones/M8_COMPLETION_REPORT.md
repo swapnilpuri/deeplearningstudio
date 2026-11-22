@@ -83,19 +83,82 @@ or test failure. Skipped: none. Environment issues resolved as above.
 Browser attempt used the computer-use plugin. It inspected the dedicated Edge
 local studio at port 8767 (the earlier M7 session). Address replacement timed out;
 reobservation showed the old URL unchanged. Enumeration/state capture recovered,
-but keyboard input then failed with "failed to activate captured window". No M8
-browser rendering, chart hover, editor interaction, file roundtrip or download
-verification pass is claimed. Existing user server/session was not stopped.
-Fresh install, Netron and independent architecture/educational acceptance remain
-unexecuted. Browser helper failure is not evidence of an application defect.
+but keyboard input then failed with "failed to activate captured window". That
+initial attempt did not verify M8 rendering or interaction. The dedicated-browser
+verification below supersedes that limitation for the workflows actually tested.
+Existing user server/session was not stopped. Fresh install, Netron and independent
+architecture/educational acceptance remain unexecuted.
 
 Scope: transparent whitespace/character tokenization, static toy embeddings and
 simple pooling, uniform-negative skip-gram, tiny generated binary classification;
 no production tokenizer, pretrained encoder, attention, Transformer, vector index,
 RAG, new dependency or embedding ONNX export. All prior ONNX tests passed.
 
-**Final acceptance: implementation and automated/runtime verification passed;
-manual/browser and independent acceptance pending.** See M8_ACCEPTANCE_CRITERIA.md.
+**Final acceptance: implementation, automated/runtime verification and core browser
+acceptance passed; independent acceptance pending.** See M8_ACCEPTANCE_CRITERIA.md.
+
+## Dedicated browser acceptance — 2026-11-21
+
+The user started Streamlit and opened a dedicated single-tab Edge window at
+http://localhost:8501, dark theme, 80% zoom. Computer-use native accessibility and
+actual screenshots verified the following against source commit `8a72e49`
+(implementation unchanged from `f2d76a3`):
+
+- All twelve sections opened and rendered. Concepts showed worked math and live
+  lookup values; word and character tokenization produced different sequences,
+  including retained spaces, with vocabulary/PAD/UNK/truncation displays.
+- Matrix lab: enabled custom JSON and supplied the actual 8×3 matrix with row 0
+  [0,0,0] and rows 1–7 [i,i+1,i+2]. Table and heatmap updated. IDs [0,0,1] produced
+  matching lookup and one-hot products; displayed maximum difference **0.00000000**.
+- Gradient lab: seed 42, rate .1, input [2,2,3,0]. SGD CE **1.09425418→0.81263374**;
+  Adam CE **1.09425418→0.65511260**. Central difference and autograd for E[2,0]
+  both displayed **−0.2900080038**. Before/after and occurrence-gradient data rendered.
+- Similarity/retrieval screen rendered four metrics and retrieval controls. Edited
+  vector A to [0,0,0,0] and enabled comparison normalization without an app error.
+  This browser check does not replace the numerical ranking/zero tests.
+- Skip-gram: executed default D=8, window 2, negatives 3, Adam .03, batch 32,
+  5 epochs, seed 42 through the actual Train button. Initial/trained tables,
+  neighbor comparison and 2D PCA plots rendered; changed plot dimension to 3 and
+  inspected the rendered 3D PCA. Neighbor links, labels and coordinate tables were
+  visible. Example animal trained neighbors: pet .8104, puppy .8038, dog .7385,
+  home .5896, cat .33. These describe this run, not a general semantic-quality claim.
+- Sentence lab: opened reversed default sentences, then cleared sentence A and
+  selected max pooling; the empty/all-PAD experiment stayed valid. Individual and
+  pooled tensors/plots were available. Exact invariance/empty values remain covered
+  by numerical tests rather than a separate browser arithmetic audit.
+- Position lab: learned mode, token reversal and sinusoidal mode with odd D=5
+  executed. Token/position IDs, formulas, tensor tables and heatmaps rendered.
+- Builder: default V=12,D=4,C=2,B=2,T=5 showed inferred graph and **58** parameters.
+  Learned positions at capacity 12 added 48 parameters for **106** total. Graph,
+  weight shapes, mask, pooling and logits rendered. Actual specification download
+  was read back: schema 5, architecture embedding, positional learned, matching
+  dimensions and seed.
+- Classifier: actual default five-epoch Adam training at D=8, rate .03, batch 32,
+  seed 42. Curves, vocabulary and embedding-gradient heatmap rendered. Explicit
+  held-out evaluation returned CE **0.596323**, accuracy **0.647059**; confusion
+  **[[4,3],[3,7]]**, predictions and matrix plot displayed. Workflow evidence only.
+- Evaluation screen rendered its evidence/interpretation table and retained word
+  results. Quiz: selected all 21 answers individually through the browser, graded
+  **21/21**, and inspected the displayed answer explanations.
+- Saved notes and marked complete. Downloaded progress, uploaded that exact task
+  file through the native picker, clicked Load, and re-exported. Read-back verified
+  exact JSON equality before/after import: schema 1, embedding completion, 21/21
+  score with timestamp, and the exact saved notes. An initial export omitted
+  notes; after reobserving the text-blur rerender and explicitly clicking Save
+  again, the final export confirmed persistence. No source-level cause was established.
+  This was not treated as a successful save until the downloaded file confirmed it.
+
+No source defect or visible rendering failure was identified in these workflows.
+Native automation sometimes needed reobservation after input/scroll and keyboard
+navigation for menu options below the clipped viewport. These tool limitations
+were resolved within the session. User Streamlit/browser remain open.
+
+Not exercised in this browser session: Direct 2D/3D mode, t-SNE, deliberate chart
+hover/rotation, every control/error combination, and a legacy M4–M7 progress import
+(the browser round trip used the newly exported M8 file). Applicable existing
+numerical/headless/runtime evidence remains recorded above. No full independent
+architecture/education acceptance is claimed. This follow-up edits documentation
+only; the already-passing 253-test regression was not repeated.
 
 ## Git delivery
 
@@ -111,5 +174,5 @@ approved CLI workflow created the PR successfully. No approval bypass was used.
 
 This delivery follow-up changes documentation only; source remains exactly as
 tested in the 253-test regression, so tests were not repeated. Final containing
-documentation commit is resolved by `git rev-parse HEAD`. Browser/manual and
-independent acceptance remain pending as recorded above.
+documentation commit is resolved by `git rev-parse HEAD`. Core browser acceptance
+has since passed as recorded above; independent acceptance remains pending.
