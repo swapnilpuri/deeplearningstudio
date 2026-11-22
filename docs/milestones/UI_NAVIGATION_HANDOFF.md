@@ -7,7 +7,7 @@
   clean M10 integration branch. Fetch confirmed M10 PR #7 was merged. The feature
   branch was fast-forwarded to `3b062d75aa94791454cd74c4f27ae85e7247a001`
   (current master; identical source tree) without discarding local edits.
-- Current implementation commit: see `git log -1 --oneline` on this branch.
+- Implementation commit: `20ca575`; later documentation commit records delivery.
   No merge into master is authorized or performed.
 
 ## Inventory and implementation
@@ -113,6 +113,16 @@ refactor. No known calculation/training changes or functional failures.
 
 ## Delivery
 
+Branch pushed to `deeplearningstudio/feature/ui-consistent-learning-navigation`.
+[Draft PR #8](https://github.com/swapnilpuri/deeplearningstudio/pull/8) targets
+`master`. The GitHub connector returned 403 (resource not accessible by integration);
+the existing authenticated GitHub CLI created the draft PR successfully using a
+body file. No credentials or permissions were changed.
+
 Implementation and automated verification are ready for review. Next task:
 independent review and the manual visual checks above; do not merge automatically.
-Push and PR outcome will be recorded here after delivery.
+
+```powershell
+git switch feature/ui-consistent-learning-navigation
+gh pr view 8 --repo swapnilpuri/deeplearningstudio
+```
